@@ -7,12 +7,30 @@ title: "Ma Tool Box"
 description: "Tous mes outils, sites et logiciels préférés, au même endroit."
 
 sections:
+#Types D'Icones :
+#globe — un globe (sites web)
+#download — flèche de téléchargement
+#terminal — invite de commande
+#windows — les 4 carrés (logo Windows)
+#wrench — clé à molette (outils/réglages)
+#code — chevrons < > (dev)
+#gamepad — manette de jeu
+#shield — bouclier (sécurité)
+#folder — dossier (par défaut si t'indiques rien)
+#network — schéma réseau
+#link — chaîne de lien (utilisé par défaut sur les outils)
 
   # ------------------------------------------------------------------
   # Une "section" = un gros bloc repliable. icon est optionnel.
   # Icônes disponibles: globe, download, terminal, windows, wrench,
   # code, gamepad, shield, folder, network, link
   # ------------------------------------------------------------------
+  - title: "My OWN Tools"
+    icon: folder
+    tools:
+      - title: "QRCoddy"
+        url: "https://tools.tiags.fr/qrcoddy"
+        desc: "Tiago Meira - CopyRight"
   - title: "Sites Web"
     icon: globe
     tools:

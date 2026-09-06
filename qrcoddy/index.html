@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QRcoddy — Générateur de QR Code</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.js"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --red: #e10600;
+  --red-glow: #ff2b2b;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1000px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+/* ===== FOND ===== */
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(225,6,0,0.14), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(225,6,0,0.10), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== GLASS ===== */
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); position: relative; overflow: hidden; }
+.glass-glow::before {
+  content: ""; position: absolute; width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(225,6,0,0.2), transparent 65%); filter: blur(20px);
+  pointer-events: none; transform: translate(-50%,-50%);
+  left: var(--gx,-999px); top: var(--gy,-999px); z-index: 0; opacity: 0; transition: opacity 0.4s;
+}
+.glass-glow:hover::before { opacity: 1; }
+.glass-glow > * { position: relative; z-index: 1; }
+
+/* ===== TOP BAR ===== */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--red); }
+.free-badge {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; color: var(--red-glow);
+  background: rgba(225,6,0,0.1); border: 1px solid rgba(225,6,0,0.3); padding: 6px 14px; border-radius: 999px;
+  text-transform: uppercase;
+}
+
+/* ===== HERO ===== */
+.hero { padding: 150px 0 30px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--red-glow); }
+.hero p { opacity: 0.6; font-size: 0.95rem; margin-top: 8px; }
+
+/* ===== LAYOUT PRINCIPAL ===== */
+.studio {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 22px; padding: 30px 0 80px;
+  align-items: start; animation: fadeInUp 0.8s ease both;
+}
+@media (max-width: 820px) { .studio { grid-template-columns: 1fr; } }
+
+.panel { padding: 28px; border-radius: 24px; }
+.panel h2 { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--red-glow); margin-bottom: 20px; }
+
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 0.8rem; font-weight: 700; opacity: 0.7; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+.field input[type="text"], .field input[type="url"], .field textarea {
+  width: 100%; padding: 12px 16px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.92rem; font-weight: 600; outline: none;
+  transition: 0.2s; font-family: inherit;
+}
+.field textarea { resize: vertical; min-height: 70px; }
+.field input:focus, .field textarea:focus { border-color: rgba(225,6,0,0.5); background: rgba(225,6,0,0.06); }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+.color-input-wrap { display: flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+.color-input-wrap input[type="color"] { width: 30px; height: 30px; border: none; border-radius: 8px; background: none; cursor: pointer; padding: 0; }
+.color-input-wrap span { font-size: 0.8rem; font-weight: 700; opacity: 0.7; text-transform: uppercase; }
+
+.seg {
+  display: flex; gap: 6px; padding: 5px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+}
+.seg button {
+  flex: 1; padding: 9px 10px; border: none; border-radius: 8px; background: transparent; color: var(--text);
+  font-family: inherit; font-weight: 700; font-size: 0.78rem; cursor: pointer; opacity: 0.55; transition: 0.2s;
+}
+.seg button.active { background: rgba(225,6,0,0.18); color: var(--red-glow); opacity: 1; border: 1px solid rgba(225,6,0,0.3); }
+
+.slider-row { display: flex; align-items: center; gap: 12px; }
+.slider-row input[type="range"] { flex: 1; accent-color: var(--red); }
+.slider-row .val { font-size: 0.8rem; font-weight: 800; color: var(--red-glow); min-width: 40px; text-align: right; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; }
+.switch { position: relative; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider { position: absolute; inset: 0; background: rgba(255,255,255,0.15); border-radius: 999px; transition: 0.25s; cursor: pointer; }
+.switch .slider::before { content: ""; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.25s; }
+.switch input:checked + .slider { background: var(--red); }
+.switch input:checked + .slider::before { transform: translateX(20px); }
+
+.file-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px;
+  border: 1.5px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); font-size: 0.85rem; font-weight: 700;
+  opacity: 0.7; cursor: pointer; transition: 0.2s;
+}
+.file-btn:hover { border-color: rgba(225,6,0,0.4); opacity: 1; color: var(--red-glow); }
+.file-btn svg { width: 16px; height: 16px; }
+.file-btn input { display: none; }
+.logo-status { font-size: 0.78rem; opacity: 0.5; margin-top: 8px; display: flex; align-items: center; justify-content: space-between; }
+.logo-status button { background: none; border: none; color: var(--red-glow); font-weight: 700; cursor: pointer; font-size: 0.78rem; }
+
+/* ===== PREVIEW ===== */
+.preview-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; position: sticky; top: 120px; }
+.qr-stage {
+  width: 100%; aspect-ratio: 1; max-width: 380px; border-radius: 28px; display: flex; align-items: center; justify-content: center;
+  padding: 24px; position: relative;
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+.qr-stage svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 15px 35px rgba(225,6,0,0.25)); }
+
+.download-row { display: flex; gap: 12px; width: 100%; max-width: 380px; }
+.dl-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px; border-radius: 14px;
+  font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.25s; border: 1.5px solid rgba(225,6,0,0.4);
+  color: var(--red-glow); background: rgba(225,6,0,0.08);
+}
+.dl-btn:hover { background: rgba(225,6,0,0.18); border-color: var(--red); transform: translateY(-2px); }
+.dl-btn svg { width: 16px; height: 16px; }
+
+footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">QR<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>QR<span>coddy</span></h1>
+    <p>Génère des QR codes jolis, personnalisés, en 2 secondes.</p>
+  </div>
+
+  <div class="studio">
+
+    <div class="panel glass">
+      <h2>Contenu</h2>
+      <div class="field">
+        <label>Lien ou texte</label>
+        <textarea id="qr-text" placeholder="https://tonsite.com">https://tools.tondomaine.fr</textarea>
+      </div>
+
+      <h2 style="margin-top:4px;">Style</h2>
+      <div class="field">
+        <label>Forme des points</label>
+        <div class="seg" id="seg-shape">
+          <button data-val="square" class="active">Carré</button>
+          <button data-val="rounded">Arrondi</button>
+          <button data-val="dots">Points</button>
+        </div>
+      </div>
+
+      <div class="field" id="roundness-field" style="display:none;">
+        <label>Niveau d'arrondi <span class="val" id="roundness-val" style="float:right;color:var(--red-glow);font-weight:800;">100%</span></label>
+        <div class="slider-row">
+          <input type="range" id="roundness-range" min="0" max="100" value="100">
+        </div>
+      </div>
+
+      <div class="field row2">
+        <div>
+          <label>Couleur du code</label>
+          <div class="color-input-wrap">
+            <input type="color" id="fg-color" value="#e10600">
+            <span id="fg-color-label">#E10600</span>
+          </div>
+        </div>
+        <div>
+          <label>Couleur de fond</label>
+          <div class="color-input-wrap">
+            <input type="color" id="bg-color" value="#0a0a0a">
+            <span id="bg-color-label">#0A0A0A</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field toggle-row">
+        <label style="margin:0;">Fond transparent</label>
+        <label class="switch">
+          <input type="checkbox" id="bg-transparent">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label>Marge <span class="val" id="margin-val" style="float:right;color:var(--red-glow);font-weight:800;">4</span></label>
+        <div class="slider-row">
+          <input type="range" id="margin-range" min="0" max="8" value="4">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Niveau de correction d'erreur</label>
+        <div class="seg" id="seg-ecc">
+          <button data-val="L">L</button>
+          <button data-val="M">M</button>
+          <button data-val="Q">Q</button>
+          <button data-val="H" class="active">H</button>
+        </div>
+      </div>
+
+      <h2 style="margin-top:4px;">Logo (optionnel)</h2>
+      <div class="field">
+        <label class="file-btn">
+          <input type="file" id="logo-input" accept="image/*">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Importer une image
+        </label>
+        <div class="logo-status" id="logo-status" style="display:none;">
+          <span id="logo-name">image.png</span>
+          <button id="logo-remove">Retirer</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-panel">
+      <div class="qr-stage glass" id="qr-stage"></div>
+      <div class="download-row">
+        <button class="dl-btn" id="dl-png">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          PNG
+        </button>
+        <button class="dl-btn" id="dl-svg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          SVG
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · QRcoddy, gratuit et sans limite.</footer>
+
+<script>
+let state = {
+  shape: 'square',
+  fg: '#e10600',
+  bg: '#0a0a0a',
+  transparent: false,
+  margin: 4,
+  ecc: 'H',
+  roundness: 100,
+  logoDataUrl: null
+};
+
+const stage = document.getElementById('qr-stage');
+
+function buildQR(text, ecc) {
+  const qr = qrcode(0, ecc);
+  qr.addData(text || ' ');
+  qr.make();
+  return qr;
+}
+
+function dotShape(x, y, size) {
+  const cx = x + size / 2, cy = y + size / 2;
+  return `<circle cx="${cx}" cy="${cy}" r="${size/2}" />`;
+}
+
+function squareShape(x, y, size) {
+  return `<rect x="${x}" y="${y}" width="${size}" height="${size}" />`;
+}
+
+/* Rectangle avec un rayon indépendant par coin (comme border-radius CSS) */
+function roundedRectPath(x, y, w, h, rTL, rTR, rBR, rBL) {
+  return `M${x + rTL},${y}
+    L${x + w - rTR},${y}
+    A${rTR},${rTR} 0 0 1 ${x + w},${y + rTR}
+    L${x + w},${y + h - rBR}
+    A${rBR},${rBR} 0 0 1 ${x + w - rBR},${y + h}
+    L${x + rBL},${y + h}
+    A${rBL},${rBL} 0 0 1 ${x},${y + h - rBL}
+    L${x},${y + rTL}
+    A${rTL},${rTL} 0 0 1 ${x + rTL},${y}
+    Z`;
+}
+
+/* Modules "arrondis" : les coins ne sont arrondis que s'ils sont vraiment isolés,
+   sinon on garde un bord droit pour que les points qui se touchent forment une ligne continue. */
+/* Ramène les 4 rayons à des valeurs cohérentes avec la taille du module,
+   en gardant les proportions, même quand on demande un rayon énorme. */
+function resolveCorners(rTL, rTR, rBR, rBL, size) {
+  const cap = v => Math.min(v, size - 0.01);
+  rTL = cap(rTL); rTR = cap(rTR); rBR = cap(rBR); rBL = cap(rBL);
+  const shrink = (a, b) => {
+    const sum = a + b;
+    if (sum > size) { const s = size / sum; return [a * s, b * s]; }
+    return [a, b];
+  };
+  [rTL, rTR] = shrink(rTL, rTR);
+  [rBL, rBR] = shrink(rBL, rBR);
+  [rTL, rBL] = shrink(rTL, rBL);
+  [rTR, rBR] = shrink(rTR, rBR);
+  return [rTL, rTR, rBR, rBL];
+}
+
+/* Les 3 grands carrés de repérage (coins haut-gauche, haut-droit, bas-gauche) */
+function isFinderModule(row, col, count) {
+  return (row < 7 && col < 7) || (row < 7 && col >= count - 7) || (row >= count - 7 && col < 7);
+}
+
+function eyePath(x0, y0, cell, factor) {
+  const outerSize = 7 * cell;
+  const midSize = 5 * cell;
+  const innerSize = 3 * cell;
+  const cx = x0 + outerSize / 2;
+  const cy = y0 + outerSize / 2;
+
+  const mkSquare = (size) => {
+    const r = size * 0.5 * factor;
+    const [rTL, rTR, rBR, rBL] = resolveCorners(r, r, r, r, size);
+    const x = cx - size / 2, y = cy - size / 2;
+    return roundedRectPath(x, y, size, size, rTL, rTR, rBR, rBL);
+  };
+
+  // 3 carrés imbriqués + fill-rule evenodd => anneau noir, anneau transparent, carré central noir
+  const d = `${mkSquare(outerSize)} ${mkSquare(midSize)} ${mkSquare(innerSize)}`;
+  return `<path d="${d}" fill-rule="evenodd" />`;
+}
+
+function smoothModuleShape(grid, count, row, col, x, y, size, roundnessFactor) {
+  const isDark = (r, c) => r >= 0 && r < count && c >= 0 && c < count && grid[r][c];
+  const top = isDark(row - 1, col);
+  const bottom = isDark(row + 1, col);
+  const left = isDark(row, col - 1);
+  const right = isDark(row, col + 1);
+
+  // roundnessFactor peut dépasser 1 pour un arrondi beaucoup plus puissant :
+  // les jonctions entre modules deviennent alors de vraies courbes bombées.
+  const rMax = size * roundnessFactor;
+  let rTL = (!top && !left) ? rMax : 0;
+  let rTR = (!top && !right) ? rMax : 0;
+  let rBR = (!bottom && !right) ? rMax : 0;
+  let rBL = (!bottom && !left) ? rMax : 0;
+
+  if (!rTL && !rTR && !rBR && !rBL) {
+    return `<rect x="${x}" y="${y}" width="${size}" height="${size}" />`;
+  }
+  [rTL, rTR, rBR, rBL] = resolveCorners(rTL, rTR, rBR, rBL, size);
+  return `<path d="${roundedRectPath(x, y, size, size, rTL, rTR, rBR, rBL)}" />`;
+}
+
+function renderQR() {
+  const text = document.getElementById('qr-text').value || ' ';
+  let qr;
+  try {
+    qr = buildQR(text, state.ecc);
+  } catch (e) {
+    stage.innerHTML = `<p style="opacity:0.5;font-size:0.85rem;text-align:center;padding:20px;">Contenu trop long pour ce niveau de correction, essaie un niveau plus bas (L ou M).</p>`;
+    return;
+  }
+  const count = qr.getModuleCount();
+  const cell = 10;
+  const margin = state.margin * cell;
+  const size = count * cell + margin * 2;
+
+  const grid = [];
+  for (let row = 0; row < count; row++) {
+    grid.push([]);
+    for (let col = 0; col < count; col++) {
+      grid[row].push(qr.isDark(row, col));
+    }
+  }
+
+  const roundnessFactor = (state.roundness / 100) * 0.75;
+
+  let modules = '';
+  for (let row = 0; row < count; row++) {
+    for (let col = 0; col < count; col++) {
+      if (!grid[row][col]) continue;
+      if (state.shape === 'rounded' && isFinderModule(row, col, count)) continue;
+      const x = margin + col * cell;
+      const y = margin + row * cell;
+      if (state.shape === 'dots') {
+        modules += dotShape(x, y, cell);
+      } else if (state.shape === 'rounded') {
+        modules += smoothModuleShape(grid, count, row, col, x, y, cell, roundnessFactor);
+      } else {
+        modules += squareShape(x, y, cell);
+      }
+    }
+  }
+
+  if (state.shape === 'rounded') {
+    const eyePositions = [[0, 0], [0, count - 7], [count - 7, 0]];
+    eyePositions.forEach(([r0, c0]) => {
+      modules += eyePath(margin + c0 * cell, margin + r0 * cell, cell, roundnessFactor);
+    });
+  }
+
+  let logoLayer = '';
+  if (state.logoDataUrl) {
+    const logoSize = size * 0.22;
+    const logoPos = (size - logoSize) / 2;
+    const padSize = logoSize + 14;
+    const padPos = (size - padSize) / 2;
+    logoLayer = `
+      <rect x="${padPos}" y="${padPos}" width="${padSize}" height="${padSize}" rx="16" fill="${state.transparent ? '#ffffff' : state.bg}" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+      <image href="${state.logoDataUrl}" x="${logoPos}" y="${logoPos}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid slice" clip-path="inset(0% round 12)"/>
+    `;
+  }
+
+  const bgRect = state.transparent ? '' : `<rect width="${size}" height="${size}" fill="${state.bg}"/>`;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+    ${bgRect}
+    <g fill="${state.fg}">${modules}</g>
+    ${logoLayer}
+  </svg>`;
+
+  stage.innerHTML = svg;
+  window.__lastSvg = svg;
+  window.__lastSize = size;
+}
+
+/* ---- Contrôles ---- */
+document.getElementById('qr-text').addEventListener('input', renderQR);
+
+document.querySelectorAll('#seg-shape button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#seg-shape button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.shape = btn.dataset.val;
+    document.getElementById('roundness-field').style.display = state.shape === 'rounded' ? 'block' : 'none';
+    renderQR();
+  });
+});
+
+document.getElementById('roundness-range').addEventListener('input', e => {
+  state.roundness = parseInt(e.target.value, 10);
+  document.getElementById('roundness-val').textContent = state.roundness + '%';
+  renderQR();
+});
+
+document.querySelectorAll('#seg-ecc button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#seg-ecc button').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.ecc = btn.dataset.val;
+    renderQR();
+  });
+});
+
+document.getElementById('fg-color').addEventListener('input', e => {
+  state.fg = e.target.value;
+  document.getElementById('fg-color-label').textContent = e.target.value.toUpperCase();
+  renderQR();
+});
+document.getElementById('bg-color').addEventListener('input', e => {
+  state.bg = e.target.value;
+  document.getElementById('bg-color-label').textContent = e.target.value.toUpperCase();
+  renderQR();
+});
+document.getElementById('bg-transparent').addEventListener('change', e => {
+  state.transparent = e.target.checked;
+  renderQR();
+});
+document.getElementById('margin-range').addEventListener('input', e => {
+  state.margin = parseInt(e.target.value, 10);
+  document.getElementById('margin-val').textContent = state.margin;
+  renderQR();
+});
+
+document.getElementById('logo-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    state.logoDataUrl = ev.target.result;
+    document.getElementById('logo-status').style.display = 'flex';
+    document.getElementById('logo-name').textContent = file.name;
+    renderQR();
+  };
+  reader.readAsDataURL(file);
+});
+document.getElementById('logo-remove').addEventListener('click', () => {
+  state.logoDataUrl = null;
+  document.getElementById('logo-input').value = '';
+  document.getElementById('logo-status').style.display = 'none';
+  renderQR();
+});
+
+/* ---- Téléchargements ---- */
+document.getElementById('dl-svg').addEventListener('click', () => {
+  const blob = new Blob([window.__lastSvg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'qrcoddy.svg';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('dl-png').addEventListener('click', () => {
+  const svgBlob = new Blob([window.__lastSvg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(svgBlob);
+  const img = new Image();
+  img.onload = () => {
+    const scale = 3;
+    const canvas = document.createElement('canvas');
+    canvas.width = window.__lastSize * scale;
+    canvas.height = window.__lastSize * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(blob => {
+      const pngUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = pngUrl; a.download = 'qrcoddy.png';
+      a.click();
+      URL.revokeObjectURL(pngUrl);
+    });
+  };
+  img.src = url;
+});
+
+/* ---- Init ---- */
+renderQR();
+lucide.createIcons();
+</script>
+</body>
+</html>
