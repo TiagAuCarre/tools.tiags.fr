@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convertcoddy — Convertisseur universel</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --teal: #00c2a8;
+  --teal-glow: #4dffdf;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1000px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(0,194,168,0.14), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(0,194,168,0.10), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); }
+
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--teal); }
+.free-badge {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; color: var(--teal-glow);
+  background: rgba(0,194,168,0.1); border: 1px solid rgba(0,194,168,0.3); padding: 6px 14px; border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.hero { padding: 150px 0 30px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--teal-glow); }
+.hero p { opacity: 0.6; font-size: 0.95rem; margin-top: 8px; }
+
+.body-wrap { padding: 30px 0 80px; display: flex; flex-direction: column; gap: 18px; animation: fadeInUp 0.8s ease both; }
+
+/* Catégories */
+.cat-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.cat-scroll::-webkit-scrollbar { height: 5px; }
+.cat-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+.cat-btn {
+  flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 999px;
+  border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); cursor: pointer; font-weight: 700; font-size: 0.85rem;
+  color: var(--text); opacity: 0.65; transition: 0.2s; white-space: nowrap;
+}
+.cat-btn svg { width: 15px; height: 15px; }
+.cat-btn:hover { opacity: 1; border-color: rgba(0,194,168,0.3); }
+.cat-btn.active { background: rgba(0,194,168,0.15); border-color: var(--teal); color: var(--teal-glow); opacity: 1; }
+
+/* Convertisseur principal */
+.converter-panel { padding: 30px; border-radius: 24px; }
+.convert-row { display: grid; grid-template-columns: 1fr auto 1fr; gap: 16px; align-items: center; }
+@media (max-width: 620px) { .convert-row { grid-template-columns: 1fr; } .swap-btn { justify-self: center; transform: rotate(90deg); } }
+.io-block { display: flex; flex-direction: column; gap: 10px; }
+.io-block label { font-size: 0.75rem; font-weight: 700; opacity: 0.55; text-transform: uppercase; letter-spacing: 0.5px; }
+.io-block input[type="text"], .io-block input[type="number"] {
+  width: 100%; padding: 14px 16px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 1.4rem; font-weight: 800; outline: none; font-family: inherit;
+  transition: 0.2s;
+}
+.io-block input:focus { border-color: rgba(0,194,168,0.5); background: rgba(0,194,168,0.06); }
+.io-block select {
+  width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; font-weight: 700; outline: none; cursor: pointer; font-family: inherit;
+}
+.io-block select option { background: #111; }
+.swap-btn {
+  width: 46px; height: 46px; border-radius: 50%; border: 1.5px solid rgba(0,194,168,0.4); background: rgba(0,194,168,0.1);
+  color: var(--teal-glow); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.25s; margin-top: 22px;
+}
+.swap-btn:hover { background: rgba(0,194,168,0.2); transform: scale(1.08) rotate(180deg); }
+.swap-btn svg { width: 18px; height: 18px; }
+
+.quick-conversions { margin-top: 24px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.08); }
+.quick-conversions h3 { font-size: 0.75rem; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+.quick-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.quick-item { padding: 10px 12px; border-radius: 10px; background: rgba(255,255,255,0.03); font-size: 0.82rem; font-weight: 700; opacity: 0.75; }
+.quick-item b { color: var(--teal-glow); font-weight: 800; }
+
+/* Module électrique dédié */
+.electric-panel { padding: 28px; border-radius: 24px; }
+.electric-panel h2 { font-size: 0.9rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--teal-glow); margin-bottom: 6px; }
+.electric-panel p.sub { font-size: 0.82rem; opacity: 0.55; margin-bottom: 20px; }
+.electric-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; align-items: end; }
+@media (max-width: 700px) { .electric-grid { grid-template-columns: 1fr; } }
+.electric-grid .io-block input { font-size: 1.1rem; padding: 12px 14px; }
+.electric-result {
+  margin-top: 18px; padding: 16px 20px; border-radius: 14px; background: rgba(0,194,168,0.08); border: 1px solid rgba(0,194,168,0.25);
+  font-size: 0.95rem; font-weight: 700; text-align: center;
+}
+.electric-result b { color: var(--teal-glow); font-size: 1.15rem; }
+
+footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">CONVERT<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Convert<span>coddy</span></h1>
+    <p>Toutes les conversions dont t'as besoin, au même endroit.</p>
+  </div>
+
+  <div class="body-wrap">
+
+    <div class="cat-scroll" id="cat-scroll"></div>
+
+    <div class="converter-panel glass">
+      <div class="convert-row">
+        <div class="io-block">
+          <label>De</label>
+          <input type="text" id="input-from" inputmode="decimal" value="1">
+          <select id="unit-from"></select>
+        </div>
+        <button class="swap-btn" id="swap-btn" title="Inverser">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+        </button>
+        <div class="io-block">
+          <label>Vers</label>
+          <input type="text" id="input-to" inputmode="decimal">
+          <select id="unit-to"></select>
+        </div>
+      </div>
+
+      <div class="quick-conversions">
+        <h3>Aperçu rapide</h3>
+        <div class="quick-grid" id="quick-grid"></div>
+      </div>
+    </div>
+
+    <div class="electric-panel glass">
+      <h2>⚡ Spécial électricité : kWh ↔ Watts</h2>
+      <p class="sub">Le kWh mesure une énergie et le Watt une puissance : il faut une durée pour passer de l'un à l'autre.</p>
+
+      <div class="electric-grid">
+        <div class="io-block">
+          <label>Énergie (kWh)</label>
+          <input type="text" id="elec-kwh" inputmode="decimal" value="1">
+        </div>
+        <div class="io-block">
+          <label>Durée (heures)</label>
+          <input type="text" id="elec-hours" inputmode="decimal" value="1">
+        </div>
+        <div class="io-block">
+          <label>Puissance (W)</label>
+          <input type="text" id="elec-watts" inputmode="decimal">
+        </div>
+      </div>
+      <div class="electric-result" id="elec-result"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · Convertcoddy, gratuit et sans limite.</footer>
+
+<script>
+/* Chaque catégorie a une unité de base (facteur 1) ; tous les facteurs convertissent VERS cette base. */
+const categories = {
+  longueur: { label: 'Longueur', icon: 'ruler', units: {
+    mm: { label: 'Millimètres', f: 0.001 }, cm: { label: 'Centimètres', f: 0.01 }, m: { label: 'Mètres', f: 1 },
+    km: { label: 'Kilomètres', f: 1000 }, pouce: { label: 'Pouces', f: 0.0254 }, pied: { label: 'Pieds', f: 0.3048 },
+    yard: { label: 'Yards', f: 0.9144 }, mile: { label: 'Miles', f: 1609.344 }
+  }},
+  poids: { label: 'Poids', icon: 'weight', units: {
+    mg: { label: 'Milligrammes', f: 0.000001 }, g: { label: 'Grammes', f: 0.001 }, kg: { label: 'Kilogrammes', f: 1 },
+    tonne: { label: 'Tonnes', f: 1000 }, once: { label: 'Onces', f: 0.0283495 }, livre: { label: 'Livres', f: 0.453592 }
+  }},
+  volume: { label: 'Volume', icon: 'droplet', units: {
+    ml: { label: 'Millilitres', f: 0.001 }, cl: { label: 'Centilitres', f: 0.01 }, l: { label: 'Litres', f: 1 },
+    m3: { label: 'Mètres cubes', f: 1000 }, galUS: { label: 'Gallons (US)', f: 3.78541 },
+    pinteUS: { label: 'Pintes (US)', f: 0.473176 }, cas: { label: 'Cuillères à soupe', f: 0.015 }, cac: { label: 'Cuillères à café', f: 0.005 }
+  }},
+  temperature: { label: 'Température', icon: 'thermometer', units: {
+    c: { label: 'Celsius (°C)' }, f: { label: 'Fahrenheit (°F)' }, k: { label: 'Kelvin (K)' }
+  }, special: 'temperature' },
+  vitesse: { label: 'Vitesse', icon: 'gauge', units: {
+    ms: { label: 'Mètres/seconde', f: 1 }, kmh: { label: 'Km/h', f: 0.277778 },
+    mph: { label: 'Mph', f: 0.44704 }, noeud: { label: 'Nœuds', f: 0.514444 }
+  }},
+  temps: { label: 'Temps', icon: 'clock', units: {
+    s: { label: 'Secondes', f: 1 }, min: { label: 'Minutes', f: 60 }, h: { label: 'Heures', f: 3600 },
+    jour: { label: 'Jours', f: 86400 }, semaine: { label: 'Semaines', f: 604800 },
+    mois: { label: 'Mois (30j)', f: 2592000 }, annee: { label: 'Années', f: 31557600 }
+  }},
+  donnees: { label: 'Données', icon: 'database', units: {
+    bit: { label: 'Bits', f: 0.125 }, octet: { label: 'Octets', f: 1 }, Ko: { label: 'Kilooctets', f: 1000 },
+    Mo: { label: 'Megaoctets', f: 1e6 }, Go: { label: 'Gigaoctets', f: 1e9 }, To: { label: 'Téraoctets', f: 1e12 }
+  }},
+  pression: { label: 'Pression', icon: 'wind', units: {
+    Pa: { label: 'Pascals', f: 1 }, hPa: { label: 'Hectopascals', f: 100 }, bar: { label: 'Bars', f: 100000 },
+    atm: { label: 'Atmosphères', f: 101325 }, psi: { label: 'PSI', f: 6894.76 }, mmHg: { label: 'mmHg', f: 133.322 }
+  }},
+  energie: { label: 'Énergie', icon: 'zap', units: {
+    J: { label: 'Joules', f: 1 }, kJ: { label: 'Kilojoules', f: 1000 }, cal: { label: 'Calories', f: 4.184 },
+    kcal: { label: 'Kilocalories', f: 4184 }, Wh: { label: 'Watt-heures', f: 3600 },
+    kWh: { label: 'Kilowatt-heures', f: 3600000 }, BTU: { label: 'BTU', f: 1055.06 }
+  }},
+  puissance: { label: 'Puissance', icon: 'flame', units: {
+    W: { label: 'Watts', f: 1 }, kW: { label: 'Kilowatts', f: 1000 }, MW: { label: 'Megawatts', f: 1e6 },
+    CV: { label: 'Chevaux (CV)', f: 735.499 }, BTUh: { label: 'BTU/h', f: 0.293071 }
+  }},
+  surface: { label: 'Surface', icon: 'square', units: {
+    mm2: { label: 'mm²', f: 0.000001 }, cm2: { label: 'cm²', f: 0.0001 }, m2: { label: 'm²', f: 1 },
+    hectare: { label: 'Hectares', f: 10000 }, km2: { label: 'km²', f: 1e6 },
+    pied2: { label: 'Pieds²', f: 0.092903 }, acre: { label: 'Acres', f: 4046.86 }
+  }}
+};
+
+let currentCat = 'longueur';
+let unitFrom = 'm';
+let unitTo = 'km';
+
+function buildCategoryBar() {
+  const bar = document.getElementById('cat-scroll');
+  bar.innerHTML = Object.entries(categories).map(([key, cat]) => `
+    <button class="cat-btn ${key === currentCat ? 'active' : ''}" data-key="${key}">
+      ${iconSvg(cat.icon)} ${cat.label}
+    </button>
+  `).join('');
+  bar.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentCat = btn.dataset.key;
+      const keys = Object.keys(categories[currentCat].units);
+      unitFrom = keys[0];
+      unitTo = keys[1] || keys[0];
+      bar.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      buildUnitSelects();
+      convert('from');
+      buildQuickGrid();
+    });
+  });
+}
+
+const ICONS = {
+  ruler: '<path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.4 2.4 0 0 1 0-3.4l2.6-2.6a2.4 2.4 0 0 1 3.4 0Z"/><path d="m14.5 12.5 2-2"/><path d="m11.5 9.5 2-2"/><path d="m8.5 6.5 2-2"/><path d="m17.5 15.5 2-2"/>',
+  weight: '<circle cx="12" cy="5" r="3"/><path d="M6.5 8h11l1.5 13h-14z"/>',
+  droplet: '<path d="M12 2.69s-5.5 6.32-5.5 10.5a5.5 5.5 0 0 0 11 0c0-4.18-5.5-10.5-5.5-10.5z"/>',
+  thermometer: '<path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/>',
+  gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  database: '<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0 0 18 0V5"/><path d="M3 12a9 3 0 0 0 18 0"/>',
+  wind: '<path d="M17.7 7.7a2.5 2.5 0 1 1 1.8 4.3H2"/><path d="M9.6 4.6A2 2 0 1 1 11 8H2"/><path d="M12.6 19.4A2 2 0 1 0 14 16H2"/>',
+  zap: '<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
+  flame: '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+  square: '<rect x="3" y="3" width="18" height="18" rx="2"/>'
+};
+function iconSvg(name) {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[name] || ''}</svg>`;
+}
+
+function buildUnitSelects() {
+  const units = categories[currentCat].units;
+  const fromSel = document.getElementById('unit-from');
+  const toSel = document.getElementById('unit-to');
+  const opts = Object.entries(units).map(([key, u]) => `<option value="${key}">${u.label}</option>`).join('');
+  fromSel.innerHTML = opts;
+  toSel.innerHTML = opts;
+  fromSel.value = unitFrom;
+  toSel.value = unitTo;
+}
+
+function convertValue(value, fromKey, toKey, catKey) {
+  const cat = categories[catKey];
+  if (cat.special === 'temperature') {
+    let celsius;
+    if (fromKey === 'c') celsius = value;
+    else if (fromKey === 'f') celsius = (value - 32) * 5/9;
+    else celsius = value - 273.15;
+    if (toKey === 'c') return celsius;
+    if (toKey === 'f') return celsius * 9/5 + 32;
+    return celsius + 273.15;
+  }
+  const base = value * cat.units[fromKey].f;
+  return base / cat.units[toKey].f;
+}
+
+function formatNumber(n) {
+  if (!isFinite(n)) return '';
+  if (Math.abs(n) >= 1e9 || (Math.abs(n) < 0.0001 && n !== 0)) return n.toExponential(4);
+  return parseFloat(n.toFixed(6)).toString();
+}
+
+function convert(direction) {
+  const fromInput = document.getElementById('input-from');
+  const toInput = document.getElementById('input-to');
+  unitFrom = document.getElementById('unit-from').value;
+  unitTo = document.getElementById('unit-to').value;
+
+  if (direction === 'from') {
+    const val = parseFloat(fromInput.value.replace(',', '.'));
+    if (isNaN(val)) { toInput.value = ''; return; }
+    toInput.value = formatNumber(convertValue(val, unitFrom, unitTo, currentCat));
+  } else {
+    const val = parseFloat(toInput.value.replace(',', '.'));
+    if (isNaN(val)) { fromInput.value = ''; return; }
+    fromInput.value = formatNumber(convertValue(val, unitTo, unitFrom, currentCat));
+  }
+}
+
+function buildQuickGrid() {
+  const grid = document.getElementById('quick-grid');
+  const units = Object.keys(categories[currentCat].units);
+  const baseVal = parseFloat(document.getElementById('input-from').value.replace(',', '.')) || 1;
+  grid.innerHTML = units.filter(u => u !== unitFrom).slice(0, 6).map(u => {
+    const val = convertValue(baseVal, unitFrom, u, currentCat);
+    return `<div class="quick-item"><b>${formatNumber(val)}</b> ${categories[currentCat].units[u].label}</div>`;
+  }).join('');
+}
+
+document.getElementById('input-from').addEventListener('input', () => { convert('from'); buildQuickGrid(); });
+document.getElementById('input-to').addEventListener('input', () => { convert('to'); });
+document.getElementById('unit-from').addEventListener('change', () => { convert('from'); buildQuickGrid(); });
+document.getElementById('unit-to').addEventListener('change', () => { convert('from'); buildQuickGrid(); });
+
+document.getElementById('swap-btn').addEventListener('click', () => {
+  const fromSel = document.getElementById('unit-from');
+  const toSel = document.getElementById('unit-to');
+  const tmp = fromSel.value; fromSel.value = toSel.value; toSel.value = tmp;
+  convert('from');
+  buildQuickGrid();
+});
+
+/* ---------- Module électrique dédié ---------- */
+function computeElectric(source) {
+  const kwhInput = document.getElementById('elec-kwh');
+  const hoursInput = document.getElementById('elec-hours');
+  const wattsInput = document.getElementById('elec-watts');
+  const result = document.getElementById('elec-result');
+  const hours = parseFloat(hoursInput.value.replace(',', '.'));
+
+  if (source === 'kwh' || source === 'hours') {
+    const kwh = parseFloat(kwhInput.value.replace(',', '.'));
+    if (isNaN(kwh) || isNaN(hours) || hours === 0) { wattsInput.value = ''; result.textContent = ''; return; }
+    const watts = (kwh * 1000) / hours;
+    wattsInput.value = formatNumber(watts);
+    result.innerHTML = `${kwh} kWh consommés sur ${hours}h ⇒ une puissance moyenne de <b>${formatNumber(watts)} W</b>`;
+  } else {
+    const watts = parseFloat(wattsInput.value.replace(',', '.'));
+    if (isNaN(watts) || isNaN(hours) || hours === 0) { kwhInput.value = ''; result.textContent = ''; return; }
+    const kwh = (watts * hours) / 1000;
+    kwhInput.value = formatNumber(kwh);
+    result.innerHTML = `Un appareil de ${watts} W pendant ${hours}h ⇒ <b>${formatNumber(kwh)} kWh</b> consommés`;
+  }
+}
+document.getElementById('elec-kwh').addEventListener('input', () => computeElectric('kwh'));
+document.getElementById('elec-hours').addEventListener('input', () => computeElectric('hours'));
+document.getElementById('elec-watts').addEventListener('input', () => computeElectric('watts'));
+
+/* ---------- Init ---------- */
+buildCategoryBar();
+buildUnitSelects();
+convert('from');
+buildQuickGrid();
+computeElectric('kwh');
+lucide.createIcons();
+</script>
+</body>
+</html>
