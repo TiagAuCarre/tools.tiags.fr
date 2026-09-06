@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebTools — Générateur de favicon</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --pink: #ff3ea5;
+  --pink-glow: #ff7ec2;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1000px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(255,62,165,0.13), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(255,62,165,0.09), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); }
+
+/* ===== VRAIE NAVBAR, cette fois ===== */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1000px; margin: auto; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 14px 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; white-space: nowrap; }
+.logo span { color: var(--pink); }
+.navlinks { display: flex; align-items: center; gap: 4px; }
+.navlink {
+  display: flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: 0.85rem;
+  color: var(--text); opacity: 0.7; transition: 0.2s;
+}
+.navlink:hover { opacity: 1; background: rgba(255,62,165,0.1); color: var(--pink-glow); }
+.navlink.active { opacity: 1; background: rgba(255,62,165,0.15); color: var(--pink-glow); }
+.navlink svg { width: 13px; height: 13px; opacity: 0.6; }
+@media (max-width: 640px) { .navlink span.navlabel { display: none; } .navlink { padding: 9px 11px; } }
+
+.hero { padding: 150px 0 20px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--pink-glow); }
+.hero p { opacity: 0.6; font-size: 0.92rem; margin-top: 8px; }
+
+.body-wrap { padding: 24px 0 70px; animation: fadeInUp 0.8s ease both; }
+
+/* Zone d'upload */
+.upload-zone {
+  border-radius: 24px; padding: 40px 30px; text-align: center; border: 2px dashed rgba(255,255,255,0.15);
+  cursor: pointer; transition: 0.25s; margin-bottom: 22px;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: rgba(255,62,165,0.5); background: rgba(255,62,165,0.04); }
+.upload-zone svg { width: 36px; height: 36px; color: var(--pink-glow); margin-bottom: 12px; opacity: 0.8; }
+.upload-zone p { font-weight: 700; opacity: 0.7; font-size: 0.95rem; }
+.upload-zone .sub { font-size: 0.78rem; opacity: 0.45; margin-top: 6px; font-weight: 500; }
+.upload-zone input { display: none; }
+
+.result-panel { display: none; }
+.result-panel.show { display: block; }
+
+.source-row { display: flex; align-items: center; gap: 18px; padding: 20px; border-radius: 20px; margin-bottom: 20px; }
+.source-row img { width: 64px; height: 64px; object-fit: cover; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+.source-row .info { flex: 1; }
+.source-row .info b { display: block; font-size: 0.9rem; }
+.source-row .info span { font-size: 0.78rem; opacity: 0.5; }
+.change-btn { padding: 9px 16px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); color: var(--text); font-weight: 700; font-size: 0.8rem; cursor: pointer; }
+.change-btn:hover { border-color: rgba(255,62,165,0.4); }
+
+.previews-panel { padding: 26px; border-radius: 24px; margin-bottom: 20px; }
+.previews-panel h2 { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--pink-glow); margin-bottom: 18px; }
+.previews-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 14px; }
+.preview-item { text-align: center; }
+.preview-item .swatch { background: rgba(255,255,255,0.04); border-radius: 14px; padding: 14px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; min-height: 70px; }
+.preview-item img { max-width: 100%; max-height: 64px; border-radius: 6px; }
+.preview-item span { font-size: 0.72rem; font-weight: 700; opacity: 0.55; }
+
+.actions-row { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn {
+  display: flex; align-items: center; gap: 8px; padding: 13px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem;
+  cursor: pointer; transition: 0.25s; border: 1.5px solid rgba(255,62,165,0.4); color: var(--pink-glow); background: rgba(255,62,165,0.08);
+}
+.btn:hover { background: rgba(255,62,165,0.18); border-color: var(--pink); transform: translateY(-2px); }
+.btn svg { width: 16px; height: 16px; }
+.btn.ghost { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.15); color: var(--text); opacity: 0.85; }
+.btn.ghost:hover { border-color: rgba(255,255,255,0.3); opacity: 1; }
+
+.snippet-panel { padding: 22px; border-radius: 20px; margin-top: 20px; display: none; }
+.snippet-panel.show { display: block; }
+.snippet-panel h3 { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.55; margin-bottom: 12px; }
+.snippet-panel pre {
+  background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px 18px;
+  font-family: 'Courier New', monospace; font-size: 0.8rem; color: var(--pink-glow); overflow-x: auto; white-space: pre-wrap;
+}
+
+footer { text-align: center; padding: 20px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">WEB<span>TOOLS</span></div>
+    <div class="navlinks">
+      <a class="navlink active" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span class="navlabel">Favicon</span>
+      </a>
+      <a class="navlink" href="https://tools.tiags.fr/markcoddy/index.html" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        <span class="navlabel">Markdown</span>
+      </a>
+      <a class="navlink" href="https://tools.tiags.fr/netcoddy/index.html" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M12 12H5v4M12 12h7v4"/></svg>
+        <span class="navlabel">Netcoddy</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Web<span>Tools</span></h1>
+    <p>Générateur de favicon complet : toutes les tailles, en un clic.</p>
+  </div>
+
+  <div class="body-wrap">
+
+    <div class="upload-zone glass" id="upload-zone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <p>Clique ou dépose une image ici</p>
+      <div class="sub">Idéalement carrée, au moins 512×512px (PNG, JPG, SVG...)</div>
+      <input type="file" id="file-input" accept="image/*">
+    </div>
+
+    <div class="result-panel" id="result-panel">
+
+      <div class="source-row glass">
+        <img id="source-preview" alt="Image source">
+        <div class="info">
+          <b id="source-name">image.png</b>
+          <span id="source-dims"></span>
+        </div>
+        <button class="change-btn" id="change-btn">Changer l'image</button>
+      </div>
+
+      <div class="previews-panel glass">
+        <h2>Aperçu des tailles générées</h2>
+        <div class="previews-grid" id="previews-grid"></div>
+      </div>
+
+      <div class="actions-row">
+        <button class="btn" id="download-zip-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Télécharger le pack complet (.zip)
+        </button>
+        <button class="btn ghost" id="show-snippet-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          Voir le code HTML à coller
+        </button>
+      </div>
+
+      <div class="snippet-panel glass" id="snippet-panel">
+        <h3>À coller dans le &lt;head&gt; de ton site</h3>
+        <pre id="snippet-code"></pre>
+        <button class="btn ghost" id="copy-snippet-btn" style="margin-top:12px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Copier le code
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · WebTools, gratuit et sans limite.</footer>
+
+<script>
+const sizes = [
+  { name: 'favicon-16x16.png', size: 16 },
+  { name: 'favicon-32x32.png', size: 32 },
+  { name: 'favicon-48x48.png', size: 48 },
+  { name: 'apple-touch-icon.png', size: 180 },
+  { name: 'android-chrome-192x192.png', size: 192 },
+  { name: 'android-chrome-512x512.png', size: 512 }
+];
+
+let sourceImage = null;
+let generatedBlobs = {};
+
+const uploadZone = document.getElementById('upload-zone');
+const fileInput = document.getElementById('file-input');
+
+uploadZone.addEventListener('click', () => fileInput.click());
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+document.getElementById('change-btn').addEventListener('click', () => fileInput.click());
+
+function handleFile(file) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      sourceImage = img;
+      document.getElementById('source-preview').src = ev.target.result;
+      document.getElementById('source-name').textContent = file.name;
+      document.getElementById('source-dims').textContent = `${img.naturalWidth} × ${img.naturalHeight}px`;
+      document.getElementById('result-panel').classList.add('show');
+      generateAll();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function resizeImage(img, size) {
+  const canvas = document.createElement('canvas');
+  canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  // fond transparent, image centrée en "cover" pour rester carrée même si la source ne l'est pas
+  const ratio = Math.max(size / img.naturalWidth, size / img.naturalHeight);
+  const w = img.naturalWidth * ratio, h = img.naturalHeight * ratio;
+  ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+  return canvas;
+}
+
+function generateAll() {
+  const grid = document.getElementById('previews-grid');
+  grid.innerHTML = '';
+  generatedBlobs = {};
+
+  sizes.forEach(s => {
+    const canvas = resizeImage(sourceImage, s.size);
+    const dataUrl = canvas.toDataURL('image/png');
+    generatedBlobs[s.name] = dataUrl;
+
+    const item = document.createElement('div');
+    item.className = 'preview-item';
+    item.innerHTML = `
+      <div class="swatch"><img src="${dataUrl}" alt="${s.name}"></div>
+      <span>${s.size}×${s.size}</span>
+    `;
+    grid.appendChild(item);
+  });
+
+  document.getElementById('snippet-code').textContent = buildSnippet();
+}
+
+function buildSnippet() {
+  return `<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+<link rel="manifest" href="/site.webmanifest">`;
+}
+
+function buildManifest() {
+  return JSON.stringify({
+    name: "",
+    icons: [
+      { src: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+      { src: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" }
+    ],
+    theme_color: "#ffffff",
+    background_color: "#ffffff",
+    display: "standalone"
+  }, null, 2);
+}
+
+document.getElementById('download-zip-btn').addEventListener('click', async () => {
+  const zip = new JSZip();
+  for (const [name, dataUrl] of Object.entries(generatedBlobs)) {
+    const base64 = dataUrl.split(',')[1];
+    zip.file(name, base64, { base64: true });
+  }
+  zip.file('site.webmanifest', buildManifest());
+  zip.file('head-snippet.html', buildSnippet());
+
+  const content = await zip.generateAsync({ type: 'blob' });
+  const url = URL.createObjectURL(content);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'favicons.zip';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('show-snippet-btn').addEventListener('click', () => {
+  document.getElementById('snippet-panel').classList.toggle('show');
+});
+
+document.getElementById('copy-snippet-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(buildSnippet()).then(() => {
+    const btn = document.getElementById('copy-snippet-btn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Copié';
+    setTimeout(() => btn.innerHTML = original, 1300);
+  });
+});
+
+lucide.createIcons();
+</script>
+</body>
+</html>
