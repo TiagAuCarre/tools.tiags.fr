@@ -68,6 +68,24 @@ header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px
 .action-btn:hover { background: rgba(59,130,246,0.18); border-color: var(--blue); }
 .action-btn svg { width: 14px; height: 14px; }
 
+/* Générateur de badge Shields.io */
+.badge-gen-panel { border-radius: 20px; margin-bottom: 16px; display: none; overflow: hidden; }
+.badge-gen-panel.show { display: block; }
+.badge-gen-body { display: grid; grid-template-columns: 1fr 260px; gap: 20px; padding: 18px 22px 22px; }
+@media (max-width: 700px) { .badge-gen-body { grid-template-columns: 1fr; } }
+.badge-gen-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-content: start; }
+.bg-field label { display: block; font-size: 0.72rem; font-weight: 700; opacity: 0.6; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.4px; }
+.bg-field input, .bg-field select {
+  width: 100%; padding: 10px 12px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.85rem; font-weight: 600; outline: none; font-family: inherit;
+}
+.bg-field select option { background: #111; }
+.bg-field input:focus, .bg-field select:focus { border-color: rgba(59,130,246,0.5); }
+.badge-gen-preview { display: flex; flex-direction: column; }
+.badge-gen-preview label { font-size: 0.72rem; font-weight: 700; opacity: 0.6; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.4px; }
+.badge-preview-box { flex: 1; min-height: 60px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px dashed rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; padding: 14px; }
+.badge-preview-box img { max-width: 100%; }
+
 /* Zone d'édition : input + aide à droite */
 .edit-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; height: 56vh; min-height: 420px; }
 @media (max-width: 900px) { .edit-grid { grid-template-columns: 1fr; height: auto; } .edit-grid > div { height: 45vh; min-height: 300px; } }
@@ -157,6 +175,7 @@ footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82
       <button class="tool-btn" data-tpl="code">+ Code</button>
       <button class="tool-btn" data-tpl="tableau">+ Tableau</button>
       <button class="tool-btn" data-tpl="separateur">+ Séparateur</button>
+      <button class="tool-btn" id="badge-toggle-btn" style="border-color:rgba(59,130,246,0.4);color:var(--blue-glow);">+ Badge Shields.io</button>
 
       <div class="toolbar-spacer"></div>
       <button class="action-btn" id="copy-btn">
@@ -167,6 +186,58 @@ footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Télécharger .md
       </button>
+    </div>
+
+    <div class="badge-gen-panel glass" id="badge-gen-panel">
+      <div class="pane-head">Générateur de badge Shields.io</div>
+      <div class="badge-gen-body">
+        <div class="badge-gen-fields">
+          <div class="bg-field">
+            <label>Texte de gauche</label>
+            <input type="text" id="badge-label" value="build">
+          </div>
+          <div class="bg-field">
+            <label>Texte de droite</label>
+            <input type="text" id="badge-message" value="passing">
+          </div>
+          <div class="bg-field">
+            <label>Couleur</label>
+            <select id="badge-color">
+              <option value="brightgreen">Vert vif</option>
+              <option value="green">Vert</option>
+              <option value="yellowgreen">Vert-jaune</option>
+              <option value="yellow">Jaune</option>
+              <option value="orange">Orange</option>
+              <option value="red">Rouge</option>
+              <option value="blue" selected>Bleu</option>
+              <option value="lightgrey">Gris clair</option>
+              <option value="blueviolet">Violet</option>
+              <option value="ff69b4">Rose</option>
+              <option value="black">Noir</option>
+            </select>
+          </div>
+          <div class="bg-field">
+            <label>Style</label>
+            <select id="badge-style">
+              <option value="flat" selected>Flat</option>
+              <option value="flat-square">Flat square</option>
+              <option value="plastic">Plastic</option>
+              <option value="for-the-badge">For the badge</option>
+              <option value="social">Social</option>
+            </select>
+          </div>
+        </div>
+        <div class="badge-gen-preview">
+          <label>Aperçu</label>
+          <div class="badge-preview-box">
+            <img id="badge-preview-img" alt="Aperçu du badge">
+          </div>
+          <button class="action-btn" id="badge-insert-btn" style="margin-top:14px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Insérer dans l'éditeur
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="edit-grid">
@@ -213,6 +284,7 @@ const commands = [
   { key: 'code', label: 'Bloc de code', syntax: 'code:js ... fin', desc: 'Tout ce qui est entre "code:langage" et "fin" devient un bloc de code. Langage optionnel.', template: 'code:js\nton code ici\nfin' },
   { key: 'tableau', label: 'Tableau', syntax: 'tableau: Col A | Col B ... fin', desc: 'Première ligne = en-têtes. Une ligne par rangée ensuite, jusqu\u2019à "fin".', template: 'tableau: Colonne A | Colonne B\nvaleur 1 | valeur 2\nfin' },
   { key: 'separateur', label: 'Séparateur', syntax: 'separateur', desc: 'Trace une ligne horizontale.', template: 'separateur' },
+  { key: 'badge', label: 'Badge Shields.io', syntax: 'badge: Label | Message | couleur | style', desc: 'Génère un badge coloré (ex: build passing). Utilise plutôt le bouton "+ Badge Shields.io" au-dessus pour le configurer visuellement.', template: 'badge: build | passing | brightgreen | flat' },
 ];
 
 function buildHelpPanel() {
@@ -240,8 +312,47 @@ function insertTemplate(key) {
   compileAndRender();
 }
 
-document.querySelectorAll('.tool-btn').forEach(btn => {
+document.querySelectorAll('.tool-btn[data-tpl]').forEach(btn => {
   btn.addEventListener('click', () => insertTemplate(btn.dataset.tpl));
+});
+
+/* ---------- Générateur de badge Shields.io ---------- */
+function buildBadgeUrl() {
+  const label = document.getElementById('badge-label').value.trim() || 'label';
+  const message = document.getElementById('badge-message').value.trim() || 'message';
+  const color = document.getElementById('badge-color').value;
+  const style = document.getElementById('badge-style').value;
+  return {
+    label, message, color, style,
+    url: `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}?style=${style}`
+  };
+}
+
+function updateBadgePreview() {
+  const { url } = buildBadgeUrl();
+  document.getElementById('badge-preview-img').src = url;
+}
+
+['badge-label', 'badge-message', 'badge-color', 'badge-style'].forEach(id => {
+  document.getElementById(id).addEventListener('input', updateBadgePreview);
+});
+
+document.getElementById('badge-toggle-btn').addEventListener('click', () => {
+  const panel = document.getElementById('badge-gen-panel');
+  panel.classList.toggle('show');
+  if (panel.classList.contains('show')) updateBadgePreview();
+});
+
+document.getElementById('badge-insert-btn').addEventListener('click', () => {
+  const { label, message, color, style } = buildBadgeUrl();
+  const input = document.getElementById('md-input');
+  const start = input.selectionStart;
+  const needsNewlineBefore = start > 0 && input.value[start - 1] !== '\n';
+  const line = `badge: ${label} | ${message} | ${color} | ${style}`;
+  const insert = (needsNewlineBefore ? '\n' : '') + line + '\n';
+  input.setRangeText(insert, start, input.selectionEnd, 'end');
+  input.focus();
+  compileAndRender();
 });
 
 /* ---------- Compilateur : syntaxe simplifiée -> vrai Markdown ---------- */
@@ -292,6 +403,14 @@ function compileToMarkdown(text) {
     if (m = trimmed.match(/^lien:\s*(.*?)>(.*)$/i)) { out.push('[' + m[1].trim() + '](' + m[2].trim() + ')'); i++; continue; }
     if (m = trimmed.match(/^image:\s*(.*?)>(.*)$/i)) { out.push('![' + m[1].trim() + '](' + m[2].trim() + ')'); i++; continue; }
     if (/^separateur$/i.test(trimmed)) { out.push('---'); i++; continue; }
+    m = trimmed.match(/^badge:\s*(.*)$/i);
+    if (m) {
+      const parts = m[1].split('|').map(s => s.trim());
+      const [label = 'label', message = 'message', color = 'blue', style = 'flat'] = parts;
+      const url = `https://img.shields.io/badge/${encodeURIComponent(label)}-${encodeURIComponent(message)}-${color}?style=${style}`;
+      out.push(`![${label} ${message}](${url})`);
+      i++; continue;
+    }
     if (m = trimmed.match(/^liste:\s*(.*)$/i)) {
       m[1].split('|').map(s => s.trim()).filter(Boolean).forEach(item => out.push('- ' + item));
       i++; continue;
