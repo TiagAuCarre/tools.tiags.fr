@@ -3,49 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subnetcoddy — Calculateur IPv4</title>
-
+<title>NetCoddy — Network Toolkit</title>
 <link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 
 <style>
 :root {
-  --bg: #020805;
+  --bg: #0a0a0a;
   --glass: rgba(255,255,255,0.05);
   --border: rgba(255,255,255,0.10);
-  --green: #39ff88;
-  --green-dark: #18b85c;
-  --green-glow: #7affae;
-  --text: #f0fff5;
+  --green: #00ff66;
+  --green-glow: #66ff99;
+  --text: #f5f2ed;
 }
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+button,input,select,textarea { font-family: inherit; }
+.container { max-width: 1150px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: 'League Spartan', sans-serif;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  overflow-x: hidden;
-  min-height: 100vh;
-}
-
-.container {
-  max-width: 1000px;
-  margin: auto;
-  padding: 0 20px;
-  position: relative;
-  z-index: 2;
-}
-
-/* ---------- ORBES ---------- */
-
+/* ===== FOND ===== */
 .orb {
   position: fixed;
   border-radius: 50%;
@@ -53,76 +30,46 @@ body {
   pointer-events: none;
   z-index: 0;
 }
-
 .orb-1 {
   width: 550px;
   height: 550px;
-  background: radial-gradient(
-    circle,
-    rgba(57,255,136,0.14),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(0,255,102,0.13), transparent 70%);
   top: -180px;
   left: -160px;
   animation: orbFloat 16s ease-in-out infinite;
 }
-
 .orb-2 {
   width: 450px;
   height: 450px;
-  background: radial-gradient(
-    circle,
-    rgba(24,184,92,0.10),
-    transparent 70%
-  );
+  background: radial-gradient(circle, rgba(0,255,102,0.09), transparent 70%);
   bottom: -140px;
   right: -120px;
   animation: orbFloat2 19s ease-in-out infinite;
 }
-
 @keyframes orbFloat {
-  0%,100% {
-    transform: translate(0,0);
-  }
-
-  50% {
-    transform: translate(40px,-25px);
-  }
+  0%,100% { transform: translate(0,0) }
+  50% { transform: translate(40px,-25px) }
 }
-
 @keyframes orbFloat2 {
-  0%,100% {
-    transform: translate(0,0);
-  }
-
-  50% {
-    transform: translate(-30px,20px);
-  }
+  0%,100% { transform: translate(0,0) }
+  50% { transform: translate(-30px,20px) }
 }
-
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity:0; transform:translateY(20px) }
+  to { opacity:1; transform:translateY(0) }
 }
 
-/* ---------- GLASS ---------- */
-
+/* ===== GLASS ===== */
 .glass {
   background: var(--glass);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
 }
 
-/* ---------- HEADER ---------- */
-
+/* ===== TOP BAR ===== */
 header {
   position: fixed;
   top: 0;
@@ -131,323 +78,427 @@ header {
   z-index: 999;
   padding: 18px 20px 0;
 }
-
 .header-pill {
-  max-width: 1000px;
+  max-width: 1150px;
   margin: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-
-  background: rgba(2,8,5,0.55);
+  background: rgba(10,10,10,0.55);
   backdrop-filter: blur(20px);
-
-  border: 1px solid rgba(57,255,136,0.10);
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 50px;
-
   padding: 12px 24px;
 }
-
 .logo {
   font-weight: 900;
   letter-spacing: 1px;
   font-size: 1.05rem;
 }
-
-.logo span {
-  color: var(--green);
-}
+.logo span { color: var(--green); }
 
 .free-badge {
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.5px;
-
   color: var(--green-glow);
-
-  background: rgba(57,255,136,0.10);
-  border: 1px solid rgba(57,255,136,0.30);
-
+  background: rgba(0,255,102,0.1);
+  border: 1px solid rgba(0,255,102,0.3);
   padding: 6px 14px;
   border-radius: 999px;
-
   text-transform: uppercase;
 }
 
-/* ---------- HERO ---------- */
-
+/* ===== HERO ===== */
 .hero {
   padding: 150px 0 30px;
   text-align: center;
   animation: fadeInUp 0.7s ease both;
 }
-
 .hero h1 {
   font-size: clamp(2rem, 5vw, 3rem);
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.5px;
 }
-
-.hero h1 span {
-  color: var(--green-glow);
-}
-
+.hero h1 span { color: var(--green-glow); }
 .hero p {
   opacity: 0.6;
   font-size: 0.95rem;
   margin-top: 8px;
 }
 
-/* ---------- BODY ---------- */
-
-.body-wrap {
+/* ===== LAYOUT ===== */
+.studio {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 22px;
   padding: 30px 0 80px;
+  align-items: start;
+  animation: fadeInUp 0.8s ease both;
+}
+@media (max-width: 900px) {
+  .studio { grid-template-columns: 1fr; }
+}
 
+.panel {
+  padding: 24px;
+  border-radius: 24px;
+}
+.panel h2 {
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--green-glow);
+  margin-bottom: 16px;
+}
+
+/* ===== SEARCH ===== */
+#tool-search {
+  width: 100%;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  outline: none;
+}
+#tool-search:focus {
+  border-color: rgba(0,255,102,0.5);
+}
+
+/* ===== TOOL LIST ===== */
+.category-title {
+  color: var(--green-glow);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 18px 0 8px;
+}
+
+.tool-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.tool-item {
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  background: rgba(255,255,255,0.025);
+  color: var(--text);
+  opacity: 0.7;
+  transition: 0.2s;
+  font-size: 0.8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.tool-item:hover {
+  border-color: rgba(0,255,102,0.35);
+  color: var(--green-glow);
+  transform: translateX(2px);
+}
+.tool-item.active {
+  border-color: rgba(0,255,102,0.5);
+  background: rgba(0,255,102,0.08);
+  color: var(--green);
+  opacity: 1;
+}
+.tool-item svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+/* ===== EDITOR ===== */
+.editor-panel {
   display: flex;
   flex-direction: column;
   gap: 18px;
-
-  animation: fadeInUp 0.8s ease both;
 }
 
-/* ---------- CALCULATEUR ---------- */
-
-.calculator-panel {
-  padding: 30px;
+.workspace {
+  min-height: 450px;
+  padding: 24px;
   border-radius: 24px;
 }
 
-.panel-title {
-  font-size: 0.9rem;
-  font-weight: 800;
-
-  text-transform: uppercase;
-  letter-spacing: 1px;
-
-  color: var(--green-glow);
-
-  margin-bottom: 6px;
+.workspace h2 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-bottom: 5px;
 }
 
-.panel-subtitle {
-  font-size: 0.82rem;
+.workspace .description {
   opacity: 0.55;
+  font-size: 0.85rem;
   margin-bottom: 22px;
 }
 
-/* ---------- INPUTS ---------- */
-
-.input-grid {
+/* ===== FIELDS ===== */
+.grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2,1fr);
+  gap: 14px;
 }
 
-@media (max-width: 700px) {
-  .input-grid {
-    grid-template-columns: 1fr;
-  }
+@media(max-width:650px) {
+  .grid { grid-template-columns: 1fr; }
 }
 
-.io-block {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.io-block label {
+.field label {
+  display: block;
   font-size: 0.75rem;
   font-weight: 700;
-
-  opacity: 0.55;
-
+  opacity: 0.65;
+  margin-bottom: 7px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
-.io-block input,
-.io-block select {
+.field input,
+.field select,
+.field textarea {
   width: 100%;
-
-  padding: 14px 16px;
-
-  border-radius: 14px;
-
-  border: 1.5px solid rgba(255,255,255,0.10);
-
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
-
   color: var(--text);
-
-  font-size: 1.15rem;
-  font-weight: 800;
-
+  font-size: 0.9rem;
+  font-weight: 600;
   outline: none;
-
   transition: 0.2s;
 }
 
-.io-block input:focus,
-.io-block select:focus {
-  border-color: rgba(57,255,136,0.50);
-  background: rgba(57,255,136,0.06);
+.field textarea {
+  min-height: 140px;
+  resize: vertical;
 }
 
-.io-block select {
-  font-size: 0.88rem;
-  cursor: pointer;
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: rgba(0,255,102,0.5);
+  box-shadow: 0 0 0 3px rgba(0,255,102,0.05);
 }
 
-.io-block select option {
-  background: #07100b;
-  color: var(--text);
+/* ===== BUTTONS ===== */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
 }
 
-/* ---------- BUTTON ---------- */
-
-.calculate-btn {
-  width: 100%;
-
-  margin-top: 22px;
-
-  padding: 14px 18px;
-
-  border-radius: 14px;
-
-  border: 1.5px solid rgba(57,255,136,0.40);
-
-  background: rgba(57,255,136,0.10);
-
-  color: var(--green-glow);
-
-  font-size: 0.9rem;
-  font-weight: 800;
-
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  cursor: pointer;
-
-  transition: 0.25s;
-}
-
-.calculate-btn:hover {
-  background: rgba(57,255,136,0.18);
-  border-color: var(--green);
-  box-shadow: 0 0 22px rgba(57,255,136,0.12);
-  transform: translateY(-1px);
-}
-
-/* ---------- ERROR ---------- */
-
-.error {
-  display: none;
-
-  margin-top: 12px;
-  padding: 12px 14px;
-
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
   border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: 0.25s;
+  border: 1.5px solid rgba(0,255,102,0.4);
+  color: var(--green-glow);
+  background: rgba(0,255,102,0.08);
+}
+.btn:hover {
+  background: rgba(0,255,102,0.18);
+  border-color: var(--green);
+  transform: translateY(-2px);
+}
+.btn svg {
+  width: 15px;
+  height: 15px;
+}
+.btn.primary {
+  background: var(--green);
+  color: #001a08;
+  border-color: var(--green);
+}
+.btn.primary:hover {
+  background: var(--green-glow);
+}
+.btn.ghost {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.15);
+  color: var(--text);
+  opacity: 0.8;
+}
+.btn.ghost:hover {
+  border-color: rgba(255,255,255,0.3);
+  opacity: 1;
+}
+.btn.danger {
+  color: #ff6688;
+  background: rgba(255,80,120,0.08);
+  border-color: rgba(255,80,120,0.25);
+}
+.btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none !important;
+}
 
-  background: rgba(255,80,80,0.08);
-  border: 1px solid rgba(255,80,80,0.20);
+/* ===== RESULT ===== */
+.result {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: 15px;
+  background: rgba(0,0,0,0.25);
+  border: 1px solid rgba(255,255,255,0.08);
+  overflow-x: auto;
+}
 
-  color: #ff8b8b;
+.result-title {
+  color: var(--green-glow);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 12px;
+}
 
-  font-size: 0.85rem;
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+@media(max-width:750px) {
+  .stat-grid { grid-template-columns: repeat(2,1fr); }
+}
+
+.stat {
+  padding: 13px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.stat small {
+  display: block;
+  opacity: 0.5;
+  font-size: 0.7rem;
+  margin-bottom: 4px;
+}
+.stat b {
+  color: var(--green-glow);
+  font-size: 1rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+}
+th,td {
+  padding: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  text-align: left;
+  font-size: 0.8rem;
+}
+th {
+  color: var(--green-glow);
+  font-weight: 900;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--green-glow);
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+/* ===== DHCP ===== */
+.dhcp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 570px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.dhcp-list::-webkit-scrollbar {
+  width: 6px;
+}
+.dhcp-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+}
+
+.dhcp-row {
+  display: grid;
+  grid-template-columns: minmax(130px,1fr) 110px 42px;
+  gap: 8px;
+  align-items: center;
+}
+
+.dhcp-row input {
+  width: 100%;
+  padding: 10px 11px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  outline: none;
+  font-size: 0.8rem;
   font-weight: 700;
 }
-
-/* ---------- RESULTS ---------- */
-
-.results-panel {
-  padding: 28px;
-  border-radius: 24px;
+.dhcp-row input:focus {
+  border-color: rgba(0,255,102,0.5);
 }
 
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+.dhcp-number {
+  text-align: center;
 }
 
-@media (max-width: 650px) {
-  .results-grid {
-    grid-template-columns: 1fr;
+.dhcp-remove {
+  width: 42px;
+  height: 40px;
+  justify-content: center;
+  padding: 0;
+}
+
+@media(max-width:600px) {
+  .dhcp-row {
+    grid-template-columns: minmax(100px,1fr) 80px 40px;
   }
 }
 
-.result {
-  padding: 15px 16px;
-
-  border-radius: 14px;
-
-  background: rgba(255,255,255,0.03);
-
-  border: 1px solid rgba(255,255,255,0.07);
-
-  transition: 0.2s;
-}
-
-.result:hover {
-  background: rgba(57,255,136,0.05);
-  border-color: rgba(57,255,136,0.18);
-}
-
-.result .key {
-  font-size: 0.70rem;
-  font-weight: 700;
-
-  opacity: 0.50;
-
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  margin-bottom: 6px;
-}
-
-.result .value {
-  color: var(--green-glow);
-
-  font-size: 1rem;
+/* ===== BADGE ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 0.7rem;
   font-weight: 800;
-
-  word-break: break-all;
-}
-
-/* ---------- BINARY ---------- */
-
-.binary-result {
-  margin-top: 18px;
-
-  padding: 16px 20px;
-
-  border-radius: 14px;
-
-  background: rgba(57,255,136,0.08);
-
-  border: 1px solid rgba(57,255,136,0.20);
-
-  font-size: 0.85rem;
-
-  text-align: center;
-
-  word-break: break-all;
-}
-
-.binary-result b {
   color: var(--green-glow);
+  background: rgba(0,255,102,0.08);
+  border: 1px solid rgba(0,255,102,0.2);
 }
 
-/* ---------- FOOTER ---------- */
-
+/* ===== FOOTER ===== */
 footer {
   text-align: center;
-
   padding: 10px 0 40px;
-
   opacity: 0.4;
-
   font-size: 0.82rem;
 }
 </style>
@@ -460,556 +511,1540 @@ footer {
 
 <header>
   <div class="header-pill glass">
-    <div class="logo">
-      SUBNET<span>CODDY</span>
-    </div>
-
-    <div class="free-badge">
-      Free to use
-    </div>
+    <div class="logo">NET<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
   </div>
 </header>
 
 <div class="container">
 
   <div class="hero">
-    <h1>
-      Subnet<span>coddy</span>
-    </h1>
-
-    <p>
-      Calculateur IPv4 • CIDR • masque • réseau • broadcast • hôtes
-    </p>
+    <h1>Net<span>Coddy</span></h1>
+    <p>La boîte à outils réseau pour administrateurs, homelabs et passionnés.</p>
   </div>
 
-  <div class="body-wrap">
+  <div class="studio">
 
-    <!-- CALCULATEUR -->
+    <!-- ================= SIDEBAR ================= -->
+    <div class="panel glass">
+      <h2>Outils</h2>
 
-    <div class="calculator-panel glass">
+      <input
+        id="tool-search"
+        type="text"
+        placeholder="Rechercher un outil..."
+      >
 
-      <div class="panel-title">
-        Calculateur de sous-réseau
+      <div id="tool-menu"></div>
+    </div>
+
+    <!-- ================= WORKSPACE ================= -->
+    <div class="editor-panel">
+
+      <div class="workspace glass" id="workspace"></div>
+
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  © Tiago Meira — NetCoddy · Gratuit et sans limite.
+</footer>
+
+<script>
+/* =========================================================
+   NETCODDY — DATA
+   ========================================================= */
+
+const tools = {
+
+  "🌐 Réseau": [
+    ["subnet","Subnet Calculator","network"],
+    ["cidr","CIDR Calculator","network"],
+    ["split","CIDR Splitter","git-branch"],
+    ["vlsm","VLSM Calculator","network"],
+    ["iprange","IP Range","list"],
+    ["ipv4","IPv4 Analyzer","globe"],
+    ["ipv6","IPv6 Analyzer","globe-2"],
+    ["binary","IP → Binaire","binary"],
+    ["netid","Network / Host ID","server"],
+    ["broadcast","Broadcast Calculator","radio"],
+    ["wildcard","Wildcard Mask","asterisk"],
+    ["hostcount","Host Counter","hash"],
+    ["mask","Mask Converter","scan"],
+    ["classification","IP Classification","tags"],
+    ["vlan","VLAN Calculator","layers"],
+    ["planner","Network Planner","layout-dashboard"]
+  ],
+
+  "📡 DHCP & Adressage": [
+    ["dhcp","DHCP Pool Generator","router"],
+    ["reservations","DHCP Reservations","bookmark"],
+    ["exclusions","DHCP Exclusions","ban"],
+    ["scope","DHCP Scope","box"],
+    ["dhcpoptions","DHCP Options","settings"],
+    ["static","Static IP Planner","pin"],
+    ["addressplanner","IP Address Planner","table"]
+  ],
+
+  "🔎 Diagnostic": [
+    ["ping","Ping Command","radio-tower"],
+    ["pingsweep","Ping Sweep","radar"],
+    ["portsweep","Port Range Checker","scan-line"],
+    ["port","Port Checker","plug"],
+    ["dns","DNS Lookup","search"],
+    ["reverse","Reverse DNS","undo-2"],
+    ["mx","MX Lookup","mail"],
+    ["txt","TXT Lookup","file-text"],
+    ["ns","NS Lookup","server"],
+    ["cname","CNAME Lookup","link"],
+    ["http","HTTP Status","globe"],
+    ["url","URL Analyzer","link-2"],
+    ["latency","Latency","timer"],
+    ["packetloss","Packet Loss","activity"],
+    ["mtu","MTU Calculator","maximize-2"],
+    ["protocols","Protocol Reference","book-open"]
+  ],
+
+  "🔌 MAC & Ethernet": [
+    ["mac","MAC Analyzer","cpu"],
+    ["macformat","MAC Formatter","hash"],
+    ["macbinary","MAC → Binary","binary"],
+    ["macdecimal","MAC → Decimal","calculator"],
+    ["oui","OUI Analyzer","factory"],
+    ["mactype","MAC Type","tags"],
+    ["eui48","EUI-48","fingerprint"],
+    ["eui64","EUI-64","fingerprint"],
+    ["etherframe","Ethernet Frame","box"],
+    ["vlanframe","802.1Q VLAN","layers"],
+    ["ethertype","EtherType","tag"],
+    ["rj45","RJ45 Wiring","cable"],
+    ["cable","Cable Categories","cable"]
+  ],
+
+  "🔐 Sécurité": [
+    ["headers","Security Headers","shield-check"],
+    ["password","Password Strength","key-round"],
+    ["hash","Hash Generator","hash"],
+    ["sha256","SHA-256","fingerprint"],
+    ["sha512","SHA-512","fingerprint"],
+    ["base64","Base64","code"],
+    ["urlencode","URL Encode / Decode","link"],
+    ["jwt","JWT Decoder","braces"],
+    ["uuid","UUID Generator","fingerprint"],
+    ["token","Random Token","key"],
+    ["checksum","Checksum","check"],
+    ["filehash","File Hash","file-check"],
+    ["security","Security Checklist","shield-check"]
+  ],
+
+  "🐳 Docker / Linux": [
+    ["compose","Docker Compose Generator","boxes"],
+    ["portainer","Portainer Stack Generator","container"],
+    ["dockerports","Docker Port Mapper","arrow-left-right"],
+    ["volumes","Docker Volume Planner","hard-drive"],
+    ["dockernetwork","Docker Network Generator","network"],
+    ["cron","Crontab Generator","clock"],
+    ["chmod","Chmod Calculator","lock-keyhole"],
+    ["permissions","Linux Permissions","shield"],
+    ["systemd","Systemd Timer","timer"]
+  ]
+};
+
+const toolMap = {};
+
+for (const [category, list] of Object.entries(tools)) {
+  for (const tool of list) {
+    toolMap[tool[0]] = {
+      name: tool[1],
+      icon: tool[2],
+      category
+    };
+  }
+}
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+const toolMenu = document.getElementById("tool-menu");
+
+function renderMenu(filter="") {
+
+  toolMenu.innerHTML = "";
+
+  const query = filter.toLowerCase().trim();
+
+  for (const [category,list] of Object.entries(tools)) {
+
+    const filtered = list.filter(tool =>
+      tool[1].toLowerCase().includes(query) ||
+      category.toLowerCase().includes(query)
+    );
+
+    if (!filtered.length) continue;
+
+    const title = document.createElement("div");
+    title.className = "category-title";
+    title.textContent = category;
+    toolMenu.appendChild(title);
+
+    const listEl = document.createElement("div");
+    listEl.className = "tool-list";
+
+    filtered.forEach(tool => {
+
+      const button = document.createElement("div");
+
+      button.className = "tool-item";
+      button.dataset.tool = tool[0];
+
+      button.innerHTML = `
+        <i data-lucide="${tool[2]}"></i>
+        <span>${tool[1]}</span>
+      `;
+
+      button.onclick = () => openTool(tool[0]);
+
+      listEl.appendChild(button);
+    });
+
+    toolMenu.appendChild(listEl);
+  }
+
+  lucide.createIcons();
+}
+
+document.getElementById("tool-search").addEventListener("input",e=>{
+  renderMenu(e.target.value);
+});
+
+renderMenu();
+
+/* =========================================================
+   COMMON HELPERS
+   ========================================================= */
+
+function esc(value) {
+  return String(value)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+function ipToInt(ip) {
+
+  const parts = ip.trim().split(".");
+
+  if (
+    parts.length !== 4 ||
+    parts.some(x => !/^\d+$/.test(x) || Number(x) < 0 || Number(x) > 255)
+  ) {
+    throw new Error("Adresse IPv4 invalide.");
+  }
+
+  return (
+    (((Number(parts[0]) * 256) + Number(parts[1])) * 256 + Number(parts[2])) * 256
+    + Number(parts[3])
+  );
+}
+
+function intToIp(n) {
+
+  n = Number(n) >>> 0;
+
+  return [
+    (n >>> 24) & 255,
+    (n >>> 16) & 255,
+    (n >>> 8) & 255,
+    n & 255
+  ].join(".");
+}
+
+function maskFromPrefix(prefix) {
+
+  if (prefix === 0) return 0;
+
+  return (0xffffffff << (32-prefix)) >>> 0;
+}
+
+function parseCIDR(value) {
+
+  const match = value.trim().match(/^(.+)\/(\d{1,2})$/);
+
+  if (!match) {
+    throw new Error("Format attendu : 192.168.1.0/24");
+  }
+
+  const ip = ipToInt(match[1]);
+  const prefix = Number(match[2]);
+
+  if (prefix < 0 || prefix > 32) {
+    throw new Error("Préfixe CIDR invalide.");
+  }
+
+  const mask = maskFromPrefix(prefix);
+
+  const network = (ip & mask) >>> 0;
+  const broadcast = (network | (~mask >>> 0)) >>> 0;
+
+  return {
+    ip,
+    prefix,
+    mask,
+    network,
+    broadcast,
+    total: broadcast-network+1,
+    hosts:
+      prefix <= 30
+        ? broadcast-network-1
+        : prefix === 31
+          ? 2
+          : 1
+  };
+}
+
+function prefixToMask(prefix) {
+  return intToIp(maskFromPrefix(prefix));
+}
+
+/* =========================================================
+   OPEN TOOL
+   ========================================================= */
+
+const workspace = document.getElementById("workspace");
+
+function openTool(id) {
+
+  document.querySelectorAll(".tool-item").forEach(item=>{
+    item.classList.toggle("active",item.dataset.tool===id);
+  });
+
+  if (renderers[id]) {
+    renderers[id]();
+  } else {
+    renderGeneric(id);
+  }
+
+  lucide.createIcons();
+}
+
+/* =========================================================
+   SUBNET
+   ========================================================= */
+
+function renderSubnet() {
+
+  workspace.innerHTML = `
+    <h2>Subnet Calculator</h2>
+    <div class="description">
+      Analyse complète d'un réseau IPv4.
+    </div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Adresse / CIDR</label>
+        <input id="subnet-input" value="192.168.1.0/24">
       </div>
 
-      <div class="panel-subtitle">
-        Entre une adresse IPv4 et un préfixe CIDR pour obtenir toutes les informations réseau.
+    </div>
+
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn primary" onclick="calculateSubnet()">
+        <i data-lucide="calculator"></i>
+        Calculer
+      </button>
+    </div>
+
+    <div id="subnet-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function calculateSubnet() {
+
+  try {
+
+    const x = parseCIDR(
+      document.getElementById("subnet-input").value
+    );
+
+    document.getElementById("subnet-result").innerHTML = `
+
+      <div class="result">
+
+        <div class="result-title">Résultat</div>
+
+        <div class="stat-grid">
+
+          <div class="stat">
+            <small>Network ID</small>
+            <b>${intToIp(x.network)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Broadcast</small>
+            <b>${intToIp(x.broadcast)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Masque</small>
+            <b>${prefixToMask(x.prefix)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Hôtes</small>
+            <b>${x.hosts}</b>
+          </div>
+
+        </div>
+
+        <table>
+
+          <tr>
+            <th>Propriété</th>
+            <th>Valeur</th>
+          </tr>
+
+          <tr>
+            <td>CIDR</td>
+            <td>/${x.prefix}</td>
+          </tr>
+
+          <tr>
+            <td>Premier hôte</td>
+            <td>${intToIp(x.prefix >= 31 ? x.network : x.network+1)}</td>
+          </tr>
+
+          <tr>
+            <td>Dernier hôte</td>
+            <td>${intToIp(x.prefix >= 31 ? x.broadcast : x.broadcast-1)}</td>
+          </tr>
+
+          <tr>
+            <td>Wildcard</td>
+            <td>${intToIp((~x.mask)>>>0)}</td>
+          </tr>
+
+          <tr>
+            <td>Adresses totales</td>
+            <td>${x.total}</td>
+          </tr>
+
+        </table>
+
+      </div>
+    `;
+
+  } catch(e) {
+
+    document.getElementById("subnet-result").innerHTML =
+      `<div class="result"><span style="color:#ff6688">${esc(e.message)}</span></div>`;
+  }
+}
+
+/* =========================================================
+   CIDR
+   ========================================================= */
+
+function renderCIDR() {
+
+  workspace.innerHTML = `
+    <h2>CIDR Calculator</h2>
+    <div class="description">
+      Conversion CIDR, masque, wildcard et capacité réseau.
+    </div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Réseau</label>
+        <input id="cidr-input" value="10.20.0.0/24">
       </div>
 
-      <div class="input-grid">
+    </div>
 
-        <div class="io-block">
+    <div class="toolbar" style="margin-top:18px">
+      <button class="btn primary" onclick="calculateCIDR()">
+        <i data-lucide="calculator"></i>
+        Calculer
+      </button>
+    </div>
 
-          <label>
-            Adresse IPv4
-          </label>
+    <div id="cidr-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function calculateCIDR() {
+
+  try {
+
+    const x = parseCIDR(
+      document.getElementById("cidr-input").value
+    );
+
+    document.getElementById("cidr-result").innerHTML = `
+      <div class="result">
+
+        <div class="stat-grid">
+
+          <div class="stat">
+            <small>CIDR</small>
+            <b>/${x.prefix}</b>
+          </div>
+
+          <div class="stat">
+            <small>Masque</small>
+            <b>${prefixToMask(x.prefix)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Réseau</small>
+            <b>${intToIp(x.network)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Hôtes</small>
+            <b>${x.hosts}</b>
+          </div>
+
+        </div>
+
+      </div>
+    `;
+
+  } catch(e) {
+
+    document.getElementById("cidr-result").innerHTML =
+      `<div class="result" style="color:#ff6688">${esc(e.message)}</div>`;
+  }
+}
+
+/* =========================================================
+   CIDR SPLITTER
+   ========================================================= */
+
+function renderSplit() {
+
+  workspace.innerHTML = `
+    <h2>CIDR Splitter</h2>
+    <div class="description">
+      Découpe un réseau en sous-réseaux de taille identique.
+    </div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Réseau</label>
+        <input id="split-network" value="192.168.1.0/24">
+      </div>
+
+      <div class="field">
+        <label>Nouveau préfixe</label>
+        <input id="split-prefix" type="number" min="1" max="32" value="26">
+      </div>
+
+    </div>
+
+    <div class="toolbar" style="margin-top:18px">
+
+      <button class="btn primary" onclick="calculateSplit()">
+        <i data-lucide="git-branch"></i>
+        Découper
+      </button>
+
+    </div>
+
+    <div id="split-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function calculateSplit() {
+
+  try {
+
+    const net = parseCIDR(
+      document.getElementById("split-network").value
+    );
+
+    const prefix = Number(
+      document.getElementById("split-prefix").value
+    );
+
+    if (prefix < net.prefix) {
+      throw new Error("Le nouveau préfixe doit être supérieur ou égal.");
+    }
+
+    const count = 2 ** (prefix-net.prefix);
+
+    if (count > 4096) {
+      throw new Error("Trop de sous-réseaux à afficher.");
+    }
+
+    const size = 2 ** (32-prefix);
+
+    let rows = "";
+
+    for (let i=0;i<count;i++) {
+
+      const network = net.network + i*size;
+      const broadcast = network+size-1;
+
+      rows += `
+        <tr>
+          <td>${i+1}</td>
+          <td>${intToIp(network)}/${prefix}</td>
+          <td>${intToIp(network+1)}</td>
+          <td>${intToIp(broadcast-1)}</td>
+          <td>${intToIp(broadcast)}</td>
+        </tr>
+      `;
+    }
+
+    document.getElementById("split-result").innerHTML = `
+      <div class="result">
+
+        <table>
+
+          <tr>
+            <th>#</th>
+            <th>Réseau</th>
+            <th>Premier</th>
+            <th>Dernier</th>
+            <th>Broadcast</th>
+          </tr>
+
+          ${rows}
+
+        </table>
+
+      </div>
+    `;
+
+  } catch(e) {
+
+    document.getElementById("split-result").innerHTML =
+      `<div class="result" style="color:#ff6688">${esc(e.message)}</div>`;
+  }
+}
+
+/* =========================================================
+   DHCP — 40 CATÉGORIES
+   ========================================================= */
+
+const defaultDHCP = [
+
+  ["Serveurs",6],
+  ["PC fixes",15],
+  ["PC portables",8],
+  ["Téléphones",15],
+  ["Tablettes",5],
+  ["IoT",10],
+  ["Caméras",6],
+  ["Imprimantes",3],
+  ["NAS",3],
+  ["Proxmox",2],
+  ["Home Assistant",1],
+  ["Docker",4],
+  ["VM",10],
+  ["Conteneurs",8],
+  ["Switches",3],
+  ["Routeurs",2],
+  ["Points d'accès Wi-Fi",4],
+  ["Télévisions",4],
+  ["Consoles",4],
+  ["Box Internet",1],
+  ["VoIP",2],
+  ["Domotique",4],
+  ["Capteurs",8],
+  ["Serrures",1],
+  ["Portails",1],
+  ["Alarmes",2],
+  ["NVR",1],
+  ["Media",3],
+  ["Chromecast / TV",3],
+  ["Assistants vocaux",2],
+  ["Invités",10],
+  ["BYOD",8],
+  ["Développement",4],
+  ["Test",4],
+  ["Supervision",2],
+  ["Sauvegardes",3],
+  ["VPN",2],
+  ["Management",3],
+  ["Réserve",8],
+  ["Autres",5]
+
+];
+
+let dhcpCategories = defaultDHCP.map(x => ({
+  name:x[0],
+  count:x[1]
+}));
+
+function renderDHCP() {
+
+  workspace.innerHTML = `
+
+    <h2>DHCP Pool Generator</h2>
+
+    <div class="description">
+      40 catégories préconfigurées avec un nombre d'entités modifiable.
+      Adapte-les librement à ton environnement.
+    </div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Réseau</label>
+        <input id="dhcp-network" value="192.168.1.0/24">
+      </div>
+
+      <div class="field">
+        <label>Passerelle</label>
+        <input id="dhcp-gateway" value="192.168.1.1">
+      </div>
+
+      <div class="field">
+        <label>Début du pool</label>
+        <input id="dhcp-start" placeholder="Automatique">
+      </div>
+
+      <div class="field">
+        <label>Fin du pool</label>
+        <input id="dhcp-end" placeholder="Automatique">
+      </div>
+
+    </div>
+
+    <div style="height:20px"></div>
+
+    <div class="badge">
+      <i data-lucide="list"></i>
+      Catégories : <span id="dhcp-count">${dhcpCategories.length}</span>
+    </div>
+
+    <div style="height:14px"></div>
+
+    <div class="dhcp-list" id="dhcp-list"></div>
+
+    <div class="toolbar" style="margin-top:15px">
+
+      <button class="btn" onclick="addDHCPCategory()">
+        <i data-lucide="plus"></i>
+        Ajouter
+      </button>
+
+      <button class="btn ghost" onclick="resetDHCP()">
+        <i data-lucide="rotate-ccw"></i>
+        Réinitialiser les 40
+      </button>
+
+      <button class="btn primary" onclick="generateDHCP()">
+        <i data-lucide="wand-sparkles"></i>
+        Générer
+      </button>
+
+    </div>
+
+    <div id="dhcp-result"></div>
+  `;
+
+  renderDHCPRows();
+  lucide.createIcons();
+}
+
+function renderDHCPRows() {
+
+  const list = document.getElementById("dhcp-list");
+
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  dhcpCategories.forEach((category,index)=>{
+
+    const row = document.createElement("div");
+    row.className = "dhcp-row";
+
+    row.innerHTML = `
+
+      <input
+        value="${esc(category.name)}"
+        placeholder="Nom"
+        oninput="dhcpCategories[${index}].name=this.value"
+      >
+
+      <input
+        class="dhcp-number"
+        type="number"
+        min="0"
+        value="${category.count}"
+        oninput="dhcpCategories[${index}].count=Math.max(0,Number(this.value)||0)"
+      >
+
+      <button
+        class="btn danger dhcp-remove"
+        onclick="removeDHCPCategory(${index})"
+        title="Supprimer"
+      >
+        <i data-lucide="x"></i>
+      </button>
+
+    `;
+
+    list.appendChild(row);
+  });
+
+  const counter=document.getElementById("dhcp-count");
+  if(counter) counter.textContent=dhcpCategories.length;
+
+  lucide.createIcons();
+}
+
+function addDHCPCategory() {
+
+  dhcpCategories.push({
+    name:"Nouvelle catégorie",
+    count:5
+  });
+
+  renderDHCPRows();
+}
+
+function removeDHCPCategory(index) {
+
+  dhcpCategories.splice(index,1);
+
+  renderDHCPRows();
+}
+
+function resetDHCP() {
+
+  dhcpCategories = defaultDHCP.map(x=>({
+    name:x[0],
+    count:x[1]
+  }));
+
+  renderDHCPRows();
+}
+
+function generateDHCP() {
+
+  try {
+
+    const network = parseCIDR(
+      document.getElementById("dhcp-network").value
+    );
+
+    if(network.prefix >= 31) {
+      throw new Error("Le réseau est trop petit pour un pool DHCP classique.");
+    }
+
+    const gatewayText =
+      document.getElementById("dhcp-gateway").value.trim();
+
+    const gateway = gatewayText
+      ? ipToInt(gatewayText)
+      : network.network+1;
+
+    let startText =
+      document.getElementById("dhcp-start").value.trim();
+
+    let endText =
+      document.getElementById("dhcp-end").value.trim();
+
+    const start = startText
+      ? ipToInt(startText)
+      : network.network+2;
+
+    const end = endText
+      ? ipToInt(endText)
+      : network.broadcast-1;
+
+    if(
+      start < network.network+1 ||
+      end > network.broadcast-1 ||
+      start > end
+    ) {
+      throw new Error("Le pool DHCP doit rester dans la plage du réseau.");
+    }
+
+    if(
+      gateway < network.network+1 ||
+      gateway > network.broadcast-1
+    ) {
+      throw new Error("La passerelle n'est pas dans le réseau.");
+    }
+
+    if(gateway >= start && gateway <= end) {
+      throw new Error("La passerelle doit être exclue du pool DHCP.");
+    }
+
+    const available = end-start+1;
+
+    const requested = dhcpCategories.reduce(
+      (sum,category)=>sum+Math.max(0,Number(category.count)||0),
+      0
+    );
+
+    if(requested > available) {
+
+      throw new Error(
+        `Impossible d'allouer ${requested} adresses : seulement ${available} sont disponibles.`
+      );
+
+    }
+
+    let cursor=start;
+
+    let rows="";
+
+    dhcpCategories.forEach(category=>{
+
+      const count=Math.max(
+        0,
+        Number(category.count)||0
+      );
+
+      if(count===0) {
+
+        rows += `
+          <tr>
+            <td>${esc(category.name)}</td>
+            <td>—</td>
+            <td>—</td>
+            <td>0</td>
+            <td>0%</td>
+          </tr>
+        `;
+
+        return;
+      }
+
+      const allocationStart=cursor;
+      const allocationEnd=cursor+count-1;
+
+      cursor=allocationEnd+1;
+
+      rows += `
+        <tr>
+
+          <td>${esc(category.name)}</td>
+
+          <td>${intToIp(allocationStart)}</td>
+
+          <td>${intToIp(allocationEnd)}</td>
+
+          <td>${count}</td>
+
+          <td>${((count/available)*100).toFixed(2)}%</td>
+
+        </tr>
+      `;
+
+    });
+
+    const remaining=available-requested;
+
+    document.getElementById("dhcp-result").innerHTML = `
+
+      <div class="result">
+
+        <div class="result-title">
+          Pool DHCP généré
+        </div>
+
+        <div class="stat-grid">
+
+          <div class="stat">
+            <small>Pool</small>
+            <b>${intToIp(start)} → ${intToIp(end)}</b>
+          </div>
+
+          <div class="stat">
+            <small>Disponibles</small>
+            <b>${available}</b>
+          </div>
+
+          <div class="stat">
+            <small>Attribuées</small>
+            <b>${requested}</b>
+          </div>
+
+          <div class="stat">
+            <small>Restantes</small>
+            <b>${remaining}</b>
+          </div>
+
+        </div>
+
+        <table>
+
+          <tr>
+            <th>Catégorie</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Entités</th>
+            <th>Part</th>
+          </tr>
+
+          ${rows}
+
+        </table>
+
+        <div style="height:18px"></div>
+
+        <table>
+
+          <tr>
+            <th>Paramètre</th>
+            <th>Valeur</th>
+          </tr>
+
+          <tr>
+            <td>Réseau</td>
+            <td>${intToIp(network.network)}/${network.prefix}</td>
+          </tr>
+
+          <tr>
+            <td>Masque</td>
+            <td>${prefixToMask(network.prefix)}</td>
+          </tr>
+
+          <tr>
+            <td>Passerelle</td>
+            <td>${intToIp(gateway)}</td>
+          </tr>
+
+          <tr>
+            <td>Broadcast</td>
+            <td>${intToIp(network.broadcast)}</td>
+          </tr>
+
+          <tr>
+            <td>Adresses libres</td>
+            <td>${remaining}</td>
+          </tr>
+
+        </table>
+
+      </div>
+    `;
+
+  } catch(e) {
+
+    document.getElementById("dhcp-result").innerHTML = `
+      <div class="result">
+        <span style="color:#ff6688;font-weight:800">
+          ${esc(e.message)}
+        </span>
+      </div>
+    `;
+  }
+}
+
+/* =========================================================
+   MAC ANALYZER
+   ========================================================= */
+
+function renderMAC() {
+
+  workspace.innerHTML = `
+
+    <h2>MAC Analyzer</h2>
+
+    <div class="description">
+      Analyse une adresse MAC et détermine son type.
+    </div>
+
+    <div class="grid">
+
+      <div class="field">
+        <label>Adresse MAC</label>
+        <input id="mac-input" value="00:11:22:33:44:55">
+      </div>
+
+    </div>
+
+    <div class="toolbar" style="margin-top:18px">
+
+      <button class="btn primary" onclick="analyzeMAC()">
+        <i data-lucide="scan"></i>
+        Analyser
+      </button>
+
+    </div>
+
+    <div id="mac-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function analyzeMAC() {
+
+  try {
+
+    const input =
+      document.getElementById("mac-input").value;
+
+    const hex =
+      input.replace(/[^0-9a-fA-F]/g,"").toUpperCase();
+
+    if(!/^[0-9A-F]{12}$/.test(hex)) {
+      throw new Error("Adresse MAC invalide.");
+    }
+
+    const first=parseInt(hex.slice(0,2),16);
+
+    const multicast=Boolean(first&1);
+    const local=Boolean(first&2);
+
+    const colon=hex.match(/../g).join(":");
+    const dash=hex.match(/../g).join("-");
+    const cisco=
+      hex.slice(0,4)+"."+hex.slice(4,8)+"."+hex.slice(8,12);
+
+    const binary=
+      hex.match(/../g)
+        .map(x=>parseInt(x,16).toString(2).padStart(8,"0"))
+        .join(" ");
+
+    document.getElementById("mac-result").innerHTML = `
+
+      <div class="result">
+
+        <table>
+
+          <tr>
+            <th>Propriété</th>
+            <th>Valeur</th>
+          </tr>
+
+          <tr>
+            <td>Standard</td>
+            <td>${colon}</td>
+          </tr>
+
+          <tr>
+            <td>Format Cisco</td>
+            <td>${cisco}</td>
+          </tr>
+
+          <tr>
+            <td>Type</td>
+            <td>${multicast ? "Multicast" : "Unicast"}</td>
+          </tr>
+
+          <tr>
+            <td>Administration</td>
+            <td>${local ? "Locale" : "Universelle"}</td>
+          </tr>
+
+          <tr>
+            <td>Binaire</td>
+            <td>${binary}</td>
+          </tr>
+
+        </table>
+
+      </div>
+    `;
+
+  } catch(e) {
+
+    document.getElementById("mac-result").innerHTML =
+      `<div class="result" style="color:#ff6688">${esc(e.message)}</div>`;
+  }
+}
+
+/* =========================================================
+   COMMAND GENERATOR
+   ========================================================= */
+
+function commandTool(title,description,fields,template) {
+
+  workspace.innerHTML = `
+
+    <h2>${title}</h2>
+
+    <div class="description">
+      ${description}
+    </div>
+
+    <div class="grid">
+
+      ${fields.map(field=>`
+
+        <div class="field">
+
+          <label>${field.label}</label>
 
           <input
-            id="ip"
-            type="text"
-            inputmode="decimal"
-            value="192.168.1.10"
-            placeholder="Ex : 192.168.1.10"
+            id="command-${field.id}"
+            value="${esc(field.value || "")}"
+            placeholder="${esc(field.placeholder || "")}"
           >
 
         </div>
 
-        <div class="io-block">
+      `).join("")}
 
-          <label>
-            Préfixe CIDR / Masque
-          </label>
+    </div>
 
-          <select id="prefix"></select>
-
-        </div>
-
-      </div>
+    <div class="toolbar" style="margin-top:18px">
 
       <button
-        class="calculate-btn"
-        onclick="calculate()"
+        class="btn primary"
+        onclick='generateCommand(${JSON.stringify(template)})'
       >
-        Calculer le sous-réseau
+        <i data-lucide="terminal"></i>
+        Générer
       </button>
 
-      <div
-        id="error"
-        class="error"
-      ></div>
+    </div>
+
+    <div id="command-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function generateCommand(template) {
+
+  let command=template;
+
+  document.querySelectorAll('[id^="command-"]').forEach(input=>{
+
+    const id=input.id.replace("command-","");
+
+    command=command.replaceAll(
+      `{${id}}`,
+      input.value
+    );
+
+  });
+
+  document.getElementById("command-result").innerHTML = `
+
+    <div class="result">
+
+      <div class="result-title">
+        Commande
+      </div>
+
+      <pre>${esc(command)}</pre>
 
     </div>
 
-
-    <!-- RÉSULTATS -->
-
-    <div class="results-panel glass">
-
-      <div class="panel-title">
-        Résultats
-      </div>
-
-      <div class="panel-subtitle">
-        Informations calculées pour le sous-réseau.
-      </div>
-
-      <div
-        class="results-grid"
-        id="results"
-      ></div>
-
-      <div
-        class="binary-result"
-        id="binary-result"
-      ></div>
-
-    </div>
-
-  </div>
-
-</div>
-
-<footer>
-  © Subnetcoddy — Calculateur IPv4 gratuit et local.
-</footer>
-
-
-<script>
-
-/* =========================================================
-   UTILITAIRES IPv4
-========================================================= */
-
-const prefixSelect =
-  document.getElementById('prefix');
-
-for (let i = 0; i <= 32; i++) {
-
-  const option =
-    document.createElement('option');
-
-  option.value = i;
-
-  option.textContent =
-    '/' + i + ' — ' + maskFromPrefix(i);
-
-  if (i === 24) {
-    option.selected = true;
-  }
-
-  prefixSelect.appendChild(option);
-}
-
-
-/* IPv4 → entier */
-
-function ipToInt(ip) {
-
-  const parts =
-    ip.trim().split('.');
-
-  if (parts.length !== 4) {
-    return null;
-  }
-
-  let number = 0;
-
-  for (const part of parts) {
-
-    if (
-      !/^\d+$/.test(part) ||
-      Number(part) < 0 ||
-      Number(part) > 255
-    ) {
-      return null;
-    }
-
-    number =
-      (number << 8) |
-      Number(part);
-  }
-
-  return number >>> 0;
-}
-
-
-/* entier → IPv4 */
-
-function intToIp(number) {
-
-  return [
-    (number >>> 24) & 255,
-    (number >>> 16) & 255,
-    (number >>> 8) & 255,
-    number & 255
-  ].join('.');
-}
-
-
-/* Masque */
-
-function maskInt(prefix) {
-
-  if (prefix === 0) {
-    return 0;
-  }
-
-  return (
-    0xFFFFFFFF << (32 - prefix)
-  ) >>> 0;
-}
-
-
-/* Masque → IPv4 */
-
-function maskFromPrefix(prefix) {
-
-  return intToIp(
-    maskInt(prefix)
-  );
-}
-
-
-/* Binaire */
-
-function bits(number) {
-
-  return number
-    .toString(2)
-    .padStart(8, '0');
-}
-
-
-function binaryIp(ip) {
-
-  return ip
-    .split('.')
-    .map(x => bits(Number(x)))
-    .join('.');
-}
-
-
-/* Nombre d'hôtes */
-
-function hostCount(prefix) {
-
-  const hostBits =
-    32 - prefix;
-
-  if (prefix === 32) {
-    return '1 adresse';
-  }
-
-  if (prefix === 31) {
-    return '2 adresses';
-  }
-
-  return (
-    Math.pow(2, hostBits) - 2
-  ).toLocaleString('fr-FR')
-  + ' hôtes utilisables';
-}
-
-
-/* =========================================================
-   NET ID / HOST ID
-========================================================= */
-
-function calculateNetId(ipInt, mask) {
-  return (ipInt & mask) >>> 0;
-}
-
-function calculateHostId(ipInt, mask) {
-  return (ipInt & (~mask)) >>> 0;
-}
-
-
-/* Convertit un entier en binaire sur 32 bits */
-
-function binary32(number) {
-  return number
-    .toString(2)
-    .padStart(32, '0')
-    .replace(/(.{8})(?=.)/g, '$1.');
-}
-
-
-/* =========================================================
-   CALCUL PRINCIPAL
-========================================================= */
-
-function calculate() {
-
-  const error =
-    document.getElementById('error');
-
-  const results =
-    document.getElementById('results');
-
-  const binaryResult =
-    document.getElementById('binary-result');
-
-  error.style.display = 'none';
-
-  const ip =
-    document.getElementById('ip').value;
-
-  const prefix =
-    Number(prefixSelect.value);
-
-  const ipInt =
-    ipToInt(ip);
-
-
-  /* Validation */
-
-  if (ipInt === null) {
-
-    error.textContent =
-      'Adresse IPv4 invalide. Exemple : 192.168.1.10';
-
-    error.style.display =
-      'block';
-
-    results.innerHTML = '';
-    binaryResult.innerHTML = '';
-
-    return;
-  }
-
-
-  /* Masque */
-
-  const mask =
-    maskInt(prefix);
-
-  const network =
-    (ipInt & mask) >>> 0;
-
-  const wildcard =
-    (~mask) >>> 0;
-
-  const broadcast =
-    (network | wildcard) >>> 0;
-
-
-  /* Net ID / Host ID */
-
-  const netId =
-    calculateNetId(ipInt, mask);
-
-  const hostId =
-    calculateHostId(ipInt, mask);
-
-
-  /* Premier / dernier hôte */
-
-  let first;
-  let last;
-
-  if (prefix === 32) {
-
-    first = network;
-    last = network;
-
-  } else if (prefix === 31) {
-
-    first = network;
-    last = broadcast;
-
-  } else {
-
-    first =
-      (network + 1) >>> 0;
-
-    last =
-      (broadcast - 1) >>> 0;
-  }
-
-
-  /* Classe historique */
-
-  let ipClass;
-
-  if (ipInt < 0x80000000) {
-
-    ipClass = 'A';
-
-  } else if (ipInt < 0xC0000000) {
-
-    ipClass = 'B';
-
-  } else if (ipInt < 0xE0000000) {
-
-    ipClass = 'C';
-
-  } else if (ipInt < 0xF0000000) {
-
-    ipClass = 'D (multicast)';
-
-  } else {
-
-    ipClass = 'E (réservée)';
-  }
-
-
-  /* Nombre de bits */
-
-  const networkBits =
-    prefix;
-
-  const hostBits =
-    32 - prefix;
-
-
-  /* Résultats */
-
-  const rows = [
-
-    ['Adresse IP', ip],
-
-    ['CIDR', '/' + prefix],
-
-    [
-      'Masque de sous-réseau',
-      intToIp(mask)
-    ],
-
-    [
-      'Wildcard',
-      intToIp(wildcard)
-    ],
-
-    [
-      'Net ID',
-      intToIp(netId)
-    ],
-
-    [
-      'Host ID',
-      intToIp(hostId)
-    ],
-
-    [
-      'Adresse réseau',
-      intToIp(network)
-    ],
-
-    [
-      'Broadcast',
-      intToIp(broadcast)
-    ],
-
-    [
-      'Premier hôte',
-      intToIp(first)
-    ],
-
-    [
-      'Dernier hôte',
-      intToIp(last)
-    ],
-
-    [
-      'Bits réseau',
-      networkBits + ' bits'
-    ],
-
-    [
-      'Bits hôte',
-      hostBits + ' bits'
-    ],
-
-    [
-      'Hôtes disponibles',
-      hostCount(prefix)
-    ],
-
-    [
-      'Adresses totales',
-      Math.pow(
-        2,
-        32 - prefix
-      ).toLocaleString('fr-FR')
-    ],
-
-    [
-      'Classe historique',
-      ipClass
-    ]
-  ];
-
-
-  results.innerHTML =
-    rows.map(([key, value]) => `
-
-      <div class="result">
-
-        <div class="key">
-          ${key}
-        </div>
-
-        <div class="value">
-          ${value}
-        </div>
-
-      </div>
-
-    `).join('');
-
-
-  /* Binaire */
-
-  binaryResult.innerHTML = `
-    <b>IP en binaire</b><br>
-    ${binaryIp(ip)}
-    <br><br>
-
-    <b>Net ID en binaire</b><br>
-    ${binary32(netId)}
-    <br><br>
-
-    <b>Host ID en binaire</b><br>
-    ${binary32(hostId)}
   `;
 }
 
+/* =========================================================
+   GENERIC
+   ========================================================= */
+
+function renderGeneric(id) {
+
+  const tool=toolMap[id];
+
+  if(!tool) return;
+
+  workspace.innerHTML = `
+
+    <h2>${esc(tool.name)}</h2>
+
+    <div class="description">
+      Outil NetCoddy — ${esc(tool.category)}.
+    </div>
+
+    <div class="field">
+
+      <label>Entrée</label>
+
+      <textarea
+        id="generic-input"
+        placeholder="Saisis ou colle tes données ici..."
+      ></textarea>
+
+    </div>
+
+    <div class="toolbar" style="margin-top:18px">
+
+      <button class="btn primary" onclick="runGeneric()">
+        <i data-lucide="play"></i>
+        Analyser
+      </button>
+
+      <button class="btn ghost" onclick="document.getElementById('generic-input').value=''">
+        <i data-lucide="trash-2"></i>
+        Effacer
+      </button>
+
+    </div>
+
+    <div id="generic-result"></div>
+  `;
+
+  lucide.createIcons();
+}
+
+function runGeneric() {
+
+  const value =
+    document.getElementById("generic-input").value;
+
+  document.getElementById("generic-result").innerHTML = `
+
+    <div class="result">
+
+      <div class="result-title">
+        Données reçues
+      </div>
+
+      <pre>${esc(value || "Aucune donnée.")}</pre>
+
+      <div style="margin-top:15px;opacity:.5;font-size:.8rem">
+        Ce module est prêt à être étendu avec son moteur de calcul spécifique.
+      </div>
+
+    </div>
+  `;
+}
 
 /* =========================================================
-   ÉVÉNEMENTS
-========================================================= */
+   RENDERERS
+   ========================================================= */
 
-document
-  .getElementById('ip')
-  .addEventListener(
-    'input',
-    calculate
-  );
+const renderers = {
 
-prefixSelect
-  .addEventListener(
-    'change',
-    calculate
-  );
+  subnet:renderSubnet,
 
+  cidr:renderCIDR,
 
-document
-  .getElementById('ip')
-  .addEventListener(
-    'keydown',
-    event => {
+  split:renderSplit,
 
-      if (event.key === 'Enter') {
-        calculate();
+  dhcp:renderDHCP,
+
+  mac:renderMAC,
+
+  ping:()=>commandTool(
+    "Ping Command",
+    "Génère une commande ping.",
+    [
+      {
+        id:"host",
+        label:"Hôte",
+        value:"192.168.1.1"
       }
+    ],
+    "ping {host}"
+  ),
 
-    }
-  );
+  pingsweep:()=>commandTool(
+    "Ping Sweep",
+    "Génère une commande de découverte réseau.",
+    [
+      {
+        id:"network",
+        label:"Réseau",
+        value:"192.168.1.0/24"
+      }
+    ],
+    "nmap -sn {network}"
+  ),
 
+  portsweep:()=>commandTool(
+    "Port Range Checker",
+    "Génère une commande de scan de ports.",
+    [
+      {
+        id:"host",
+        label:"Hôte",
+        value:"192.168.1.1"
+      },
+      {
+        id:"ports",
+        label:"Ports",
+        value:"1-1024"
+      }
+    ],
+    "nmap -p {ports} {host}"
+  ),
 
-/* Init */
+  port:()=>commandTool(
+    "Port Checker",
+    "Génère une commande de vérification TCP.",
+    [
+      {
+        id:"host",
+        label:"Hôte",
+        value:"192.168.1.1"
+      },
+      {
+        id:"port",
+        label:"Port",
+        value:"80"
+      }
+    ],
+    "nc -vz {host} {port}"
+  ),
 
-calculate();
+  dns:()=>commandTool(
+    "DNS Lookup",
+    "Génère une commande DNS.",
+    [
+      {
+        id:"host",
+        label:"Domaine",
+        value:"example.com"
+      }
+    ],
+    "nslookup {host}"
+  ),
+
+  reverse:()=>commandTool(
+    "Reverse DNS",
+    "Résolution DNS inverse.",
+    [
+      {
+        id:"ip",
+        label:"Adresse IP",
+        value:"1.1.1.1"
+      }
+    ],
+    "nslookup {ip}"
+  ),
+
+  mx:()=>commandTool(
+    "MX Lookup",
+    "Recherche des enregistrements MX.",
+    [
+      {
+        id:"domain",
+        label:"Domaine",
+        value:"example.com"
+      }
+    ],
+    "nslookup -type=MX {domain}"
+  ),
+
+  ns:()=>commandTool(
+    "NS Lookup",
+    "Recherche des serveurs DNS.",
+    [
+      {
+        id:"domain",
+        label:"Domaine",
+        value:"example.com"
+      }
+    ],
+    "nslookup -type=NS {domain}"
+  ),
+
+  txt:()=>commandTool(
+    "TXT Lookup",
+    "Recherche les enregistrements TXT.",
+    [
+      {
+        id:"domain",
+        label:"Domaine",
+        value:"example.com"
+      }
+    ],
+    "nslookup -type=TXT {domain}"
+  ),
+
+  cname:()=>commandTool(
+    "CNAME Lookup",
+    "Recherche un enregistrement CNAME.",
+    [
+      {
+        id:"domain",
+        label:"Domaine",
+        value:"www.example.com"
+      }
+    ],
+    "nslookup -type=CNAME {domain}"
+  ),
+
+  compose:()=>commandTool(
+    "Docker Compose Generator",
+    "Génère une base de docker-compose.yml.",
+    [
+      {
+        id:"name",
+        label:"Service",
+        value:"app"
+      },
+      {
+        id:"image",
+        label:"Image",
+        value:"nginx:latest"
+      }
+    ],
+    `services:
+  {name}:
+    image: {image}
+    restart: unless-stopped`
+  ),
+
+  portainer:()=>commandTool(
+    "Portainer Stack Generator",
+    "Génère une base de stack Docker.",
+    [
+      {
+        id:"name",
+        label:"Service",
+        value:"app"
+      },
+      {
+        id:"image",
+        label:"Image",
+        value:"nginx:latest"
+      }
+    ],
+    `services:
+  {name}:
+    image: {image}
+    restart: unless-stopped`
+  ),
+
+  chmod:()=>commandTool(
+    "Chmod Calculator",
+    "Génère une commande chmod.",
+    [
+      {
+        id:"permissions",
+        label:"Permissions numériques",
+        value:"755"
+      },
+      {
+        id:"file",
+        label:"Fichier",
+        value:"script.sh"
+      }
+    ],
+    "chmod {permissions} {file}"
+  )
+
+};
+
+/* =========================================================
+   INITIALISATION
+   ========================================================= */
+
+openTool("subnet");
 
 </script>
 
