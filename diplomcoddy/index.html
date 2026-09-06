@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Diplomcoddy — Générateur de faux diplômes</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --gold: #d4af37;
+  --gold-glow: #f0d878;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1150px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(212,175,55,0.14), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(212,175,55,0.10), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); position: relative; overflow: hidden; }
+
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1150px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--gold); }
+.free-badge {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; color: var(--gold-glow);
+  background: rgba(212,175,55,0.1); border: 1px solid rgba(212,175,55,0.3); padding: 6px 14px; border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.hero { padding: 150px 0 30px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--gold-glow); }
+.hero p { opacity: 0.6; font-size: 0.95rem; margin-top: 8px; }
+
+.studio { display: grid; grid-template-columns: 340px 1fr; gap: 22px; padding: 30px 0 80px; align-items: start; animation: fadeInUp 0.8s ease both; }
+@media (max-width: 920px) { .studio { grid-template-columns: 1fr; } }
+
+.panel { padding: 26px; border-radius: 24px; }
+.panel h2 { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gold-glow); margin-bottom: 16px; }
+
+.template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+.template-item {
+  cursor: pointer; border-radius: 12px; padding: 12px 10px; text-align: center; border: 2px solid transparent;
+  background: rgba(255,255,255,0.03); transition: 0.2s; font-size: 0.78rem; font-weight: 700;
+}
+.template-item .swatch { width: 100%; height: 46px; border-radius: 8px; margin-bottom: 8px; }
+.template-item:hover { border-color: rgba(212,175,55,0.4); transform: translateY(-2px); }
+.template-item.selected { border-color: var(--gold); background: rgba(212,175,55,0.08); }
+
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 0.78rem; font-weight: 700; opacity: 0.65; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; }
+.field input[type="text"], .field select, .field textarea {
+  width: 100%; padding: 11px 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.88rem; font-weight: 600; outline: none;
+  transition: 0.2s; font-family: inherit;
+}
+.field textarea { resize: vertical; min-height: 55px; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: rgba(212,175,55,0.5); background: rgba(212,175,55,0.06); }
+.field select { cursor: pointer; }
+.field select option { background: #111; }
+
+.editor-panel { display: flex; flex-direction: column; gap: 18px; }
+.canvas-stage {
+  border-radius: 24px; padding: 20px; display: flex; align-items: center; justify-content: center;
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+#diploma-canvas { display: block; max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 20px; border-radius: 12px; font-weight: 800; font-size: 0.85rem;
+  cursor: pointer; transition: 0.25s; border: 1.5px solid rgba(212,175,55,0.4); color: var(--gold-glow); background: rgba(212,175,55,0.08);
+}
+.btn:hover { background: rgba(212,175,55,0.18); border-color: var(--gold); transform: translateY(-2px); }
+.btn svg { width: 16px; height: 16px; }
+
+footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">DIPLOM<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Diplom<span>coddy</span></h1>
+    <p>De faux diplômes très sérieux, pour des occasions qui le sont beaucoup moins.</p>
+  </div>
+
+  <div class="studio">
+
+    <div class="panel glass">
+      <h2>Style du diplôme</h2>
+      <div class="template-grid" id="template-grid"></div>
+
+      <h2>Contenu</h2>
+      <div class="field">
+        <label>Nom du destinataire</label>
+        <input type="text" id="f-name" value="Jean Dupont">
+      </div>
+      <div class="field">
+        <label>Titre du diplôme</label>
+        <input type="text" id="f-title" value="Champion Incontesté du Canapé">
+      </div>
+      <div class="field">
+        <label>Description / raison</label>
+        <textarea id="f-desc">pour avoir survécu à une réunion qui aurait dû être un email.</textarea>
+      </div>
+      <div class="field">
+        <label>Mention</label>
+        <select id="f-mention">
+          <option>Mention Légendaire</option>
+          <option selected>Excellent(e) avec Félicitations</option>
+          <option>Peut Mieux Faire</option>
+          <option>Passable (de justesse)</option>
+          <option>Recalé mais on t'aime quand même</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Signé par</label>
+        <input type="text" id="f-signer" value="Le Grand Conseil du Fun">
+      </div>
+      <div class="field">
+        <label>Date</label>
+        <input type="text" id="f-date" value="">
+      </div>
+    </div>
+
+    <div class="editor-panel">
+      <div class="canvas-stage glass">
+        <canvas id="diploma-canvas" width="1200" height="850"></canvas>
+      </div>
+      <button class="btn" id="download-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger le diplôme
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · Diplomcoddy, gratuit et sans limite.</footer>
+
+<script>
+const canvas = document.getElementById('diploma-canvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+const templates = [
+  { id: 'classique', name: 'Le Classique', swatch: 'linear-gradient(135deg,#f4ecd8,#d4af37)' },
+  { id: 'moderne',   name: 'Moderne',       swatch: 'linear-gradient(135deg,#ffffff,#222222)' },
+  { id: 'officiel',  name: 'Officiel (parodie)', swatch: 'linear-gradient(135deg,#0d1b3e,#c9a227)' },
+  { id: 'gaming',     name: 'Trophée Gaming', swatch: 'linear-gradient(135deg,#1a0033,#00ffaa)' },
+  { id: 'scolaire',  name: 'Diplôme Scolaire', swatch: 'linear-gradient(135deg,#fdf6e3,#8b1e1e)' },
+];
+let currentTemplate = 'classique';
+
+function buildTemplatePicker() {
+  const grid = document.getElementById('template-grid');
+  grid.innerHTML = templates.map(t => `
+    <div class="template-item ${t.id === currentTemplate ? 'selected' : ''}" data-id="${t.id}">
+      <div class="swatch" style="background:${t.swatch}"></div>
+      ${t.name}
+    </div>
+  `).join('');
+  grid.querySelectorAll('.template-item').forEach(item => {
+    item.addEventListener('click', () => {
+      currentTemplate = item.dataset.id;
+      grid.querySelectorAll('.template-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      render();
+    });
+  });
+}
+
+function getData() {
+  let date = document.getElementById('f-date').value.trim();
+  if (!date) {
+    const d = new Date();
+    date = d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+  return {
+    name: document.getElementById('f-name').value || 'Anonyme',
+    title: document.getElementById('f-title').value || 'Diplôme',
+    desc: document.getElementById('f-desc').value || '',
+    mention: document.getElementById('f-mention').value,
+    signer: document.getElementById('f-signer').value || '',
+    date
+  };
+}
+
+function wrapText(text, maxWidth, font) {
+  ctx.font = font;
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  words.forEach(word => {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  });
+  if (line) lines.push(line);
+  return lines;
+}
+
+function drawOrnamentCorner(x, y, size, color, flipX, flipY) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, size);
+  ctx.quadraticCurveTo(0, 0, size, 0);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(size * 0.18, size * 0.18, 5, 0, Math.PI * 2);
+  ctx.fillStyle = color;
+  ctx.fill();
+  ctx.restore();
+}
+
+/* ---------- Template 1 : Classique doré ---------- */
+function drawClassique(d) {
+  ctx.fillStyle = '#f4ecd8';
+  ctx.fillRect(0, 0, W, H);
+  // texture subtile
+  ctx.fillStyle = 'rgba(212,175,55,0.05)';
+  for (let i = 0; i < 40; i++) ctx.fillRect(Math.random()*W, Math.random()*H, 2, 2);
+
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(30, 30, W-60, H-60);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(50, 50, W-100, H-100);
+
+  drawOrnamentCorner(70, 70, 60, '#d4af37', false, false);
+  drawOrnamentCorner(W-70, 70, 60, '#d4af37', true, false);
+  drawOrnamentCorner(70, H-70, 60, '#d4af37', false, true);
+  drawOrnamentCorner(W-70, H-70, 60, '#d4af37', true, true);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#8a6d1f';
+  ctx.font = '700 22px "Playfair Display", serif';
+  ctx.fillText('CERTIFICAT D\u2019EXCELLENCE', W/2, 150);
+
+  ctx.fillStyle = '#3a2e12';
+  ctx.font = '600 20px "League Spartan", sans-serif';
+  ctx.fillText('Ce diplôme est décerné à', W/2, 210);
+
+  ctx.font = '700 62px "Great Vibes", cursive';
+  ctx.fillStyle = '#5a3d0a';
+  ctx.fillText(d.name, W/2, 300);
+
+  ctx.font = '800 34px "Playfair Display", serif';
+  ctx.fillStyle = '#8a6d1f';
+  wrapText(d.title, W-300, '800 34px "Playfair Display", serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 370 + i * 42);
+  });
+
+  ctx.font = '500 19px "League Spartan", sans-serif';
+  ctx.fillStyle = '#3a2e12';
+  const descLines = wrapText(d.desc, W-500, '500 19px "League Spartan", sans-serif');
+  descLines.forEach((line, i) => ctx.fillText(line, W/2, 460 + i * 26));
+
+  ctx.font = '700 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#8a6d1f';
+  ctx.fillText(d.mention.toUpperCase(), W/2, 540);
+
+  ctx.textAlign = 'left';
+  ctx.font = '600 16px "League Spartan", sans-serif';
+  ctx.fillStyle = '#3a2e12';
+  ctx.fillText(d.date, 130, H-110);
+  ctx.beginPath(); ctx.moveTo(110, H-125); ctx.lineTo(310, H-125); ctx.strokeStyle = '#8a6d1f'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.textAlign = 'right';
+  ctx.fillText(d.signer, W-130, H-110);
+  ctx.beginPath(); ctx.moveTo(W-310, H-125); ctx.lineTo(W-110, H-125); ctx.stroke();
+
+  // sceau
+  ctx.beginPath();
+  ctx.arc(W-160, H-220, 55, 0, Math.PI*2);
+  ctx.fillStyle = '#b5892a';
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(W-160, H-220, 45, 0, Math.PI*2);
+  ctx.strokeStyle = '#f4ecd8';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillStyle = '#f4ecd8';
+  ctx.font = '700 12px "League Spartan", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('OFFICIEL*', W-160, H-216);
+  ctx.font = '600 8px "League Spartan", sans-serif';
+  ctx.fillText('(pas vraiment)', W-160, H-204);
+}
+
+/* ---------- Template 2 : Moderne minimaliste ---------- */
+function drawModerne(d) {
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#111111';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(50, 50, W-100, H-100);
+
+  ctx.fillStyle = '#111111';
+  ctx.fillRect(50, 50, W-100, 8);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#111111';
+  ctx.font = '900 20px "League Spartan", sans-serif';
+  ctx.fillText('C E R T I F I C A T', W/2, 150);
+
+  ctx.font = '600 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#555';
+  ctx.fillText('décerné avec fierté à', W/2, 200);
+
+  ctx.font = '900 58px "League Spartan", sans-serif';
+  ctx.fillStyle = '#111111';
+  ctx.fillText(d.name.toUpperCase(), W/2, 280);
+
+  ctx.beginPath();
+  ctx.moveTo(W/2 - 150, 305); ctx.lineTo(W/2 + 150, 305);
+  ctx.strokeStyle = '#111'; ctx.lineWidth = 3; ctx.stroke();
+
+  ctx.font = '800 30px "League Spartan", sans-serif';
+  ctx.fillStyle = '#111';
+  wrapText(d.title, W-300, '800 30px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 370 + i * 40);
+  });
+
+  ctx.font = '500 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#555';
+  wrapText(d.desc, W-500, '500 18px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 450 + i * 25);
+  });
+
+  ctx.font = '800 16px "League Spartan", sans-serif';
+  ctx.fillStyle = '#111';
+  ctx.fillText(d.mention.toUpperCase(), W/2, 530);
+
+  ctx.textAlign = 'left';
+  ctx.font = '700 15px "League Spartan", sans-serif';
+  ctx.fillStyle = '#111';
+  ctx.fillText(d.date, 130, H-115);
+  ctx.font = '500 12px "League Spartan", sans-serif'; ctx.fillStyle='#888';
+  ctx.fillText('DATE', 130, H-135);
+
+  ctx.textAlign = 'right';
+  ctx.font = '700 15px "League Spartan", sans-serif'; ctx.fillStyle = '#111';
+  ctx.fillText(d.signer, W-130, H-115);
+  ctx.font = '500 12px "League Spartan", sans-serif'; ctx.fillStyle='#888';
+  ctx.fillText('SIGNATURE', W-130, H-135);
+}
+
+/* ---------- Template 3 : Officiel parodique ---------- */
+function drawOfficiel(d) {
+  ctx.fillStyle = '#0d1b3e';
+  ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = '#c9a227';
+  ctx.lineWidth = 8;
+  ctx.strokeRect(25, 25, W-50, H-50);
+  ctx.lineWidth = 2;
+  ctx.strokeRect(45, 45, W-90, H-90);
+
+  // "blason" simplifié
+  ctx.save();
+  ctx.translate(W/2, 130);
+  ctx.fillStyle = '#c9a227';
+  ctx.beginPath();
+  ctx.moveTo(0, -40); ctx.lineTo(35, -20); ctx.lineTo(35, 20); ctx.lineTo(0, 50); ctx.lineTo(-35, 20); ctx.lineTo(-35, -20);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#0d1b3e';
+  ctx.beginPath(); ctx.arc(0, -2, 18, 0, Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c9a227';
+  ctx.font = '800 22px "Playfair Display", serif';
+  ctx.fillText('RÉPUBLIQUE DU CANAPÉ', W/2, 210);
+  ctx.font = 'italic 500 14px "League Spartan", sans-serif';
+  ctx.fillStyle = '#8ea0c9';
+  ctx.fillText('« Dormitat Qui Potest »', W/2, 235);
+
+  ctx.font = '600 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#e8ecf5';
+  ctx.fillText('Il est certifié par les présentes que', W/2, 285);
+
+  ctx.font = '900 54px "Playfair Display", serif';
+  ctx.fillStyle = '#f0d878';
+  ctx.fillText(d.name, W/2, 350);
+
+  ctx.font = '700 28px "Playfair Display", serif';
+  ctx.fillStyle = '#c9a227';
+  wrapText(d.title, W-300, '700 28px "Playfair Display", serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 400 + i * 38);
+  });
+
+  ctx.font = '500 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#c3ccdf';
+  wrapText(d.desc, W-500, '500 18px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 480 + i * 25);
+  });
+
+  ctx.font = '800 17px "League Spartan", sans-serif';
+  ctx.fillStyle = '#f0d878';
+  ctx.fillText(d.mention.toUpperCase(), W/2, 555);
+
+  ctx.textAlign = 'left';
+  ctx.font = '600 15px "League Spartan", sans-serif'; ctx.fillStyle = '#e8ecf5';
+  ctx.fillText(d.date, 130, H-110);
+  ctx.beginPath(); ctx.moveTo(110, H-125); ctx.lineTo(310, H-125); ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.textAlign = 'right';
+  ctx.fillText(d.signer, W-130, H-110);
+  ctx.beginPath(); ctx.moveTo(W-310, H-125); ctx.lineTo(W-110, H-125); ctx.stroke();
+}
+
+/* ---------- Template 4 : Trophée Gaming ---------- */
+function drawGaming(d) {
+  const grad = ctx.createLinearGradient(0, 0, W, H);
+  grad.addColorStop(0, '#1a0033');
+  grad.addColorStop(1, '#000018');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#00ffaa';
+  ctx.lineWidth = 3;
+  ctx.shadowColor = '#00ffaa';
+  ctx.shadowBlur = 15;
+  ctx.strokeRect(40, 40, W-80, H-80);
+  ctx.shadowBlur = 0;
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#00ffaa';
+  ctx.font = '900 26px "League Spartan", sans-serif';
+  ctx.shadowColor = '#00ffaa'; ctx.shadowBlur = 20;
+  ctx.fillText('★ ACHIEVEMENT UNLOCKED ★', W/2, 140);
+  ctx.shadowBlur = 0;
+
+  ctx.font = '700 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#c9a2ff';
+  ctx.fillText('Débloqué par', W/2, 195);
+
+  ctx.font = '900 60px "League Spartan", sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = '#ff00d4'; ctx.shadowBlur = 10;
+  ctx.fillText(d.name.toUpperCase(), W/2, 275);
+  ctx.shadowBlur = 0;
+
+  ctx.font = '800 32px "League Spartan", sans-serif';
+  ctx.fillStyle = '#ffcc00';
+  wrapText(d.title, W-300, '800 32px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 350 + i * 42);
+  });
+
+  ctx.font = '500 19px "League Spartan", sans-serif';
+  ctx.fillStyle = '#d6c9f7';
+  wrapText(d.desc, W-500, '500 19px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 440 + i * 26);
+  });
+
+  // barre XP
+  ctx.fillStyle = 'rgba(255,255,255,0.1)';
+  ctx.fillRect(W/2-200, 500, 400, 16);
+  ctx.fillStyle = '#00ffaa';
+  ctx.fillRect(W/2-200, 500, 400, 16);
+  ctx.fillStyle = '#000';
+  ctx.font = '700 11px "League Spartan", sans-serif';
+  ctx.fillText('XP MAX', W/2, 511);
+
+  ctx.font = '800 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#00ffaa';
+  ctx.fillText(d.mention.toUpperCase(), W/2, 555);
+
+  ctx.textAlign = 'left';
+  ctx.font = '600 15px "League Spartan", sans-serif'; ctx.fillStyle = '#c9a2ff';
+  ctx.fillText(d.date, 130, H-110);
+  ctx.textAlign = 'right';
+  ctx.fillText(d.signer, W-130, H-110);
+}
+
+/* ---------- Template 5 : Diplôme scolaire ---------- */
+function drawScolaire(d) {
+  ctx.fillStyle = '#fdf6e3';
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = '#8b1e1e';
+  ctx.lineWidth = 6;
+  ctx.strokeRect(35, 35, W-70, H-70);
+  ctx.strokeStyle = '#2b3a67';
+  ctx.lineWidth = 2;
+  ctx.strokeRect(48, 48, W-96, H-96);
+
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#2b3a67';
+  ctx.font = '800 22px "Playfair Display", serif';
+  ctx.fillText('ACADÉMIE NATIONALE DE LA FLEMME', W/2, 140);
+
+  ctx.font = '600 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillText('Le jury atteste que', W/2, 195);
+
+  ctx.font = '700 56px "Great Vibes", cursive';
+  ctx.fillStyle = '#8b1e1e';
+  ctx.fillText(d.name, W/2, 270);
+
+  ctx.font = '600 20px "League Spartan", sans-serif';
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillText('a obtenu, contre toute attente, le diplôme de', W/2, 315);
+
+  ctx.font = '800 30px "Playfair Display", serif';
+  ctx.fillStyle = '#2b3a67';
+  wrapText(d.title, W-300, '800 30px "Playfair Display", serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 365 + i * 40);
+  });
+
+  ctx.font = '500 18px "League Spartan", sans-serif';
+  ctx.fillStyle = '#3a3a3a';
+  wrapText(d.desc, W-500, '500 18px "League Spartan", sans-serif').forEach((line, i) => {
+    ctx.fillText(line, W/2, 450 + i * 25);
+  });
+
+  ctx.font = '800 17px "League Spartan", sans-serif';
+  ctx.fillStyle = '#8b1e1e';
+  ctx.fillText(d.mention.toUpperCase(), W/2, 530);
+
+  // ruban / sceau
+  ctx.fillStyle = '#8b1e1e';
+  ctx.beginPath(); ctx.moveTo(W-150, H-260); ctx.lineTo(W-110, H-180); ctx.lineTo(W-150, H-200); ctx.lineTo(W-190, H-180); ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.arc(W-150, H-240, 42, 0, Math.PI*2); ctx.fillStyle = '#2b3a67'; ctx.fill();
+  ctx.fillStyle = '#fdf6e3'; ctx.font = '700 11px "League Spartan", sans-serif';
+  ctx.fillText('DIPLÔME', W-150, H-244);
+  ctx.font = '600 9px "League Spartan", sans-serif';
+  ctx.fillText('AUTHENTIQUE*', W-150, H-232);
+
+  ctx.textAlign = 'left';
+  ctx.font = '600 15px "League Spartan", sans-serif'; ctx.fillStyle = '#3a3a3a';
+  ctx.fillText(d.date, 130, H-110);
+  ctx.beginPath(); ctx.moveTo(110, H-125); ctx.lineTo(310, H-125); ctx.strokeStyle = '#2b3a67'; ctx.lineWidth = 1; ctx.stroke();
+
+  ctx.textAlign = 'right';
+  ctx.fillText(d.signer, W-130, H-110);
+  ctx.beginPath(); ctx.moveTo(W-310, H-125); ctx.lineTo(W-110, H-125); ctx.stroke();
+}
+
+const renderers = {
+  classique: drawClassique,
+  moderne: drawModerne,
+  officiel: drawOfficiel,
+  gaming: drawGaming,
+  scolaire: drawScolaire
+};
+
+function render() {
+  ctx.clearRect(0, 0, W, H);
+  const d = getData();
+  renderers[currentTemplate](d);
+}
+
+document.querySelectorAll('#f-name, #f-title, #f-desc, #f-mention, #f-signer, #f-date').forEach(() => {});
+['f-name','f-title','f-desc','f-mention','f-signer','f-date'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const url = canvas.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = url; a.download = 'diplomcoddy.png';
+  a.click();
+});
+
+/* ---------- Init ---------- */
+buildTemplatePicker();
+
+// s'assurer que les fonts custom sont chargées avant le premier rendu
+if (document.fonts && document.fonts.ready) {
+  document.fonts.load('700 60px "Great Vibes"');
+  document.fonts.load('800 30px "Playfair Display"');
+  document.fonts.ready.then(render);
+} else {
+  render();
+}
+setTimeout(render, 400);
+
+lucide.createIcons();
+</script>
+</body>
+</html>
