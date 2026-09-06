@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memecoddy — Générateur de memes</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --gold: #ffcc00;
+  --gold-glow: #ffe066;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 1150px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+/* ===== FOND ===== */
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(255,204,0,0.13), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(255,204,0,0.09), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+/* ===== GLASS ===== */
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); position: relative; overflow: hidden; }
+
+/* ===== TOP BAR ===== */
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1150px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--gold); }
+.free-badge {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; color: var(--gold-glow);
+  background: rgba(255,204,0,0.1); border: 1px solid rgba(255,204,0,0.3); padding: 6px 14px; border-radius: 999px;
+  text-transform: uppercase;
+}
+
+/* ===== HERO ===== */
+.hero { padding: 150px 0 30px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--gold-glow); }
+.hero p { opacity: 0.6; font-size: 0.95rem; margin-top: 8px; }
+
+/* ===== LAYOUT ===== */
+.studio { display: grid; grid-template-columns: 300px 1fr; gap: 22px; padding: 30px 0 80px; align-items: start; animation: fadeInUp 0.8s ease both; }
+@media (max-width: 900px) { .studio { grid-template-columns: 1fr; } }
+
+.panel { padding: 24px; border-radius: 24px; }
+.panel h2 { font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--gold-glow); margin-bottom: 16px; }
+
+/* Templates */
+#template-search {
+  width: 100%; padding: 10px 14px; margin-bottom: 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.85rem; font-weight: 600; outline: none; font-family: inherit;
+}
+#template-search:focus { border-color: rgba(255,204,0,0.5); }
+.template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+.template-grid::-webkit-scrollbar { width: 6px; }
+.template-grid::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+.template-item { cursor: pointer; border-radius: 12px; overflow: hidden; border: 2px solid transparent; transition: 0.2s; background: rgba(255,255,255,0.03); }
+.template-item:hover { border-color: rgba(255,204,0,0.4); transform: translateY(-2px); }
+.template-item.selected { border-color: var(--gold); }
+.template-item img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.template-item span { display: block; font-size: 0.65rem; padding: 6px 8px; opacity: 0.65; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.loading-templates { grid-column: 1 / -1; text-align: center; opacity: 0.4; font-size: 0.8rem; padding: 30px 0; }
+
+.upload-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 12px;
+  border: 1.5px dashed rgba(255,255,255,0.2); background: rgba(255,255,255,0.03); font-size: 0.82rem; font-weight: 700;
+  opacity: 0.7; cursor: pointer; transition: 0.2s; margin-top: 14px;
+}
+.upload-btn:hover { border-color: rgba(255,204,0,0.4); opacity: 1; color: var(--gold-glow); }
+.upload-btn svg { width: 15px; height: 15px; }
+.upload-btn input { display: none; }
+
+/* Zone d'édition */
+.editor-panel { display: flex; flex-direction: column; gap: 18px; }
+.canvas-stage {
+  border-radius: 24px; padding: 20px; display: flex; align-items: center; justify-content: center; position: relative;
+  min-height: 340px;
+  background-image:
+    linear-gradient(45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.03) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.03) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.03) 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+.canvas-wrap { position: relative; max-width: 100%; }
+#meme-canvas { display: block; max-width: 100%; height: auto; border-radius: 8px; cursor: default; }
+#overlay-canvas { position: absolute; top: 0; left: 0; max-width: 100%; height: auto; cursor: grab; }
+.empty-hint { opacity: 0.4; font-size: 0.9rem; text-align: center; padding: 60px 20px; }
+
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: flex; align-items: center; gap: 8px; padding: 11px 18px; border-radius: 12px; font-weight: 800; font-size: 0.82rem;
+  cursor: pointer; transition: 0.25s; border: 1.5px solid rgba(255,204,0,0.4); color: var(--gold-glow); background: rgba(255,204,0,0.08);
+}
+.btn:hover { background: rgba(255,204,0,0.18); border-color: var(--gold); transform: translateY(-2px); }
+.btn svg { width: 15px; height: 15px; }
+.btn.primary { background: var(--gold); color: #1a1400; border-color: var(--gold); }
+.btn.primary:hover { background: var(--gold-glow); }
+.btn.ghost { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.15); color: var(--text); opacity: 0.8; }
+.btn.ghost:hover { border-color: rgba(255,255,255,0.3); opacity: 1; }
+.btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+
+/* Panneau texte sélectionné */
+.text-controls { display: none; flex-direction: column; gap: 14px; }
+.text-controls.show { display: flex; }
+.field label { display: block; font-size: 0.75rem; font-weight: 700; opacity: 0.65; margin-bottom: 7px; text-transform: uppercase; letter-spacing: 0.4px; }
+.field textarea {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 0.9rem; font-weight: 600; outline: none; font-family: inherit;
+  resize: vertical; min-height: 60px; transition: 0.2s;
+}
+.field textarea:focus { border-color: rgba(255,204,0,0.5); }
+.row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: end; }
+.slider-row { display: flex; align-items: center; gap: 10px; }
+.slider-row input[type="range"] { flex: 1; accent-color: var(--gold); }
+.slider-row .val { font-size: 0.75rem; font-weight: 800; color: var(--gold-glow); min-width: 30px; text-align: right; }
+.color-input-wrap { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 12px; border: 1.5px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); }
+.color-input-wrap input[type="color"] { width: 26px; height: 26px; border: none; border-radius: 6px; background: none; cursor: pointer; padding: 0; }
+.toggle-row { display: flex; align-items: center; gap: 8px; }
+.switch { position: relative; width: 38px; height: 21px; flex-shrink: 0; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.switch .slider { position: absolute; inset: 0; background: rgba(255,255,255,0.15); border-radius: 999px; transition: 0.25s; cursor: pointer; }
+.switch .slider::before { content: ""; position: absolute; width: 15px; height: 15px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.25s; }
+.switch input:checked + .slider { background: var(--gold); }
+.switch input:checked + .slider::before { transform: translateX(17px); background: #1a1400; }
+
+footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">MEME<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Meme<span>coddy</span></h1>
+    <p>Choisis un template, écris ce que tu veux, télécharge. C'est tout.</p>
+  </div>
+
+  <div class="studio">
+
+    <div class="panel glass">
+      <h2>Templates</h2>
+      <input id="template-search" type="text" placeholder="Rechercher un template...">
+      <div class="template-grid" id="template-grid">
+        <div class="loading-templates">Chargement des templates...</div>
+      </div>
+      <label class="upload-btn">
+        <input type="file" id="upload-input" accept="image/*">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Utiliser ma propre image
+      </label>
+    </div>
+
+    <div class="editor-panel">
+      <div class="canvas-stage glass">
+        <div class="canvas-wrap" id="canvas-wrap" style="display:none;">
+          <canvas id="meme-canvas"></canvas>
+          <canvas id="overlay-canvas"></canvas>
+        </div>
+        <div class="empty-hint" id="empty-hint">Choisis un template ou importe une image pour commencer</div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" id="add-text-btn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter un texte
+        </button>
+        <button class="btn ghost" id="delete-text-btn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+          Supprimer ce texte
+        </button>
+        <button class="btn" id="download-btn" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Télécharger le meme
+        </button>
+      </div>
+
+      <div class="panel glass text-controls" id="text-controls">
+        <h2>Texte sélectionné</h2>
+        <div class="field">
+          <label>Contenu</label>
+          <textarea id="text-content" placeholder="Écris ton texte ici..."></textarea>
+        </div>
+        <div class="row3">
+          <div class="field" style="margin-bottom:0;">
+            <label>Taille <span id="size-val" style="float:right;color:var(--gold-glow);">40</span></label>
+            <div class="slider-row">
+              <input type="range" id="text-size" min="12" max="120" value="40">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Couleur</label>
+            <div class="color-input-wrap">
+              <input type="color" id="text-color" value="#ffffff">
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Contour noir</label>
+            <div class="toggle-row">
+              <label class="switch">
+                <input type="checkbox" id="text-stroke" checked>
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · Memecoddy, gratuit et sans limite.</footer>
+
+<script>
+const canvas = document.getElementById('meme-canvas');
+const overlay = document.getElementById('overlay-canvas');
+const ctx = canvas.getContext('2d');
+const octx = overlay.getContext('2d');
+
+let currentImage = null;
+let textBoxes = [];
+let selectedId = null;
+let dragging = false;
+let dragOffset = { x: 0, y: 0 };
+
+function uid() { return 'txt_' + Math.random().toString(36).slice(2, 9); }
+
+/* ---------- Chargement des templates via l'API publique imgflip ---------- */
+async function loadTemplates() {
+  const grid = document.getElementById('template-grid');
+  try {
+    const res = await fetch('https://api.imgflip.com/get_memes');
+    const data = await res.json();
+    if (!data.success) throw new Error('API error');
+    renderTemplates(data.data.memes);
+  } catch (e) {
+    grid.innerHTML = `<div class="loading-templates">Impossible de charger les templates (${e.message}). Tu peux quand même importer ta propre image.</div>`;
+  }
+}
+
+let allTemplates = [];
+function renderTemplates(memes) {
+  allTemplates = memes;
+  paintTemplates(memes);
+}
+function paintTemplates(memes) {
+  const grid = document.getElementById('template-grid');
+  if (!memes.length) { grid.innerHTML = `<div class="loading-templates">Aucun résultat.</div>`; return; }
+  grid.innerHTML = memes.map(m => `
+    <div class="template-item" data-url="${m.url}" data-name="${m.name.replace(/"/g,'&quot;')}">
+      <img src="${m.url}" loading="lazy" alt="${m.name}">
+      <span>${m.name}</span>
+    </div>
+  `).join('');
+  grid.querySelectorAll('.template-item').forEach(item => {
+    item.addEventListener('click', () => {
+      grid.querySelectorAll('.template-item').forEach(i => i.classList.remove('selected'));
+      item.classList.add('selected');
+      loadImageOntoCanvas(item.dataset.url, true);
+    });
+  });
+}
+
+document.getElementById('template-search').addEventListener('input', e => {
+  const q = e.target.value.trim().toLowerCase();
+  paintTemplates(allTemplates.filter(m => m.name.toLowerCase().includes(q)));
+});
+
+/* ---------- Upload perso ---------- */
+document.getElementById('upload-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => loadImageOntoCanvas(ev.target.result, false);
+  reader.readAsDataURL(file);
+});
+
+/* ---------- Chargement image sur le canvas ---------- */
+function loadImageOntoCanvas(src, isRemote) {
+  const img = new Image();
+  if (isRemote) img.crossOrigin = 'anonymous';
+  img.onload = () => {
+    const maxSide = 800;
+    let w = img.naturalWidth, h = img.naturalHeight;
+    if (w > maxSide || h > maxSide) {
+      const scale = maxSide / Math.max(w, h);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+    }
+    canvas.width = w; canvas.height = h;
+    overlay.width = w; overlay.height = h;
+    currentImage = img;
+
+    // Zones de texte prêtes à l'emploi, comme sur les générateurs de memes classiques
+    const defaultSize = Math.round(w * 0.09);
+    textBoxes = [
+      { id: uid(), text: 'TEXTE DU HAUT', x: w / 2, y: h * 0.1, size: defaultSize, color: '#ffffff', stroke: true },
+      { id: uid(), text: 'TEXTE DU BAS', x: w / 2, y: h * 0.9, size: defaultSize, color: '#ffffff', stroke: true }
+    ];
+    selectedId = textBoxes[0].id;
+
+    document.getElementById('canvas-wrap').style.display = 'block';
+    document.getElementById('empty-hint').style.display = 'none';
+    document.getElementById('add-text-btn').disabled = false;
+    document.getElementById('download-btn').disabled = false;
+    updateSelectionUI();
+    draw();
+  };
+  img.onerror = () => {
+    if (isRemote) {
+      alert("Ce template ne peut pas être chargé pour l'édition (restriction du serveur d'origine). Essaie un autre template ou importe ta propre image.");
+    }
+  };
+  img.src = src;
+}
+
+/* ---------- Rendu ---------- */
+function wrapAndDrawText(box) {
+  const lines = box.text.split('\n');
+  ctx.font = `900 ${box.size}px Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = box.color;
+  ctx.lineWidth = Math.max(2, box.size * 0.08);
+  ctx.strokeStyle = '#000000';
+  const lineHeight = box.size * 1.15;
+  const totalHeight = lineHeight * lines.length;
+  lines.forEach((line, i) => {
+    const y = box.y - totalHeight / 2 + lineHeight * i + lineHeight / 2;
+    if (box.stroke) ctx.strokeText(line.toUpperCase(), box.x, y);
+    ctx.fillText(line.toUpperCase(), box.x, y);
+  });
+}
+
+function draw() {
+  if (!currentImage) return;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(currentImage, 0, 0, canvas.width, canvas.height);
+  textBoxes.forEach(wrapAndDrawText);
+  drawOverlay();
+}
+
+function drawOverlay() {
+  octx.clearRect(0, 0, overlay.width, overlay.height);
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  ctx.font = `900 ${box.size}px Impact, sans-serif`;
+  const lines = box.text.split('\n');
+  const widths = lines.map(l => ctx.measureText(l.toUpperCase()).width);
+  const w = Math.max(...widths, 40) + 24;
+  const lineHeight = box.size * 1.15;
+  const h = lineHeight * lines.length + 20;
+  octx.strokeStyle = 'rgba(255,204,0,0.9)';
+  octx.lineWidth = 2;
+  octx.setLineDash([6, 5]);
+  octx.strokeRect(box.x - w / 2, box.y - h / 2, w, h);
+  octx.setLineDash([]);
+}
+
+/* ---------- Interaction (drag) ---------- */
+function getCanvasCoords(evt) {
+  const rect = overlay.getBoundingClientRect();
+  const scaleX = overlay.width / rect.width;
+  const scaleY = overlay.height / rect.height;
+  const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+  const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+  return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+}
+
+function hitTest(x, y) {
+  for (let i = textBoxes.length - 1; i >= 0; i--) {
+    const box = textBoxes[i];
+    ctx.font = `900 ${box.size}px Impact, sans-serif`;
+    const lines = box.text.split('\n');
+    const widths = lines.map(l => ctx.measureText(l.toUpperCase()).width);
+    const w = Math.max(...widths, 40) + 24;
+    const lineHeight = box.size * 1.15;
+    const h = lineHeight * lines.length + 20;
+    if (x >= box.x - w / 2 && x <= box.x + w / 2 && y >= box.y - h / 2 && y <= box.y + h / 2) {
+      return box;
+    }
+  }
+  return null;
+}
+
+overlay.addEventListener('mousedown', startDrag);
+overlay.addEventListener('touchstart', startDrag, { passive: true });
+
+function startDrag(evt) {
+  const { x, y } = getCanvasCoords(evt);
+  const hit = hitTest(x, y);
+  if (hit) {
+    selectedId = hit.id;
+    dragging = true;
+    dragOffset = { x: x - hit.x, y: y - hit.y };
+    overlay.style.cursor = 'grabbing';
+  } else {
+    selectedId = null;
+  }
+  updateSelectionUI();
+  draw();
+}
+
+overlay.addEventListener('mousemove', moveDrag);
+overlay.addEventListener('touchmove', moveDrag, { passive: true });
+function moveDrag(evt) {
+  if (!dragging) return;
+  const { x, y } = getCanvasCoords(evt);
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  box.x = Math.max(0, Math.min(canvas.width, x - dragOffset.x));
+  box.y = Math.max(0, Math.min(canvas.height, y - dragOffset.y));
+  draw();
+}
+
+window.addEventListener('mouseup', () => { dragging = false; overlay.style.cursor = 'grab'; });
+window.addEventListener('touchend', () => { dragging = false; });
+
+/* ---------- Panneau de contrôle du texte sélectionné ---------- */
+function updateSelectionUI() {
+  const box = textBoxes.find(b => b.id === selectedId);
+  const controls = document.getElementById('text-controls');
+  document.getElementById('delete-text-btn').disabled = !box;
+  if (!box) { controls.classList.remove('show'); return; }
+  controls.classList.add('show');
+  document.getElementById('text-content').value = box.text;
+  document.getElementById('text-size').value = box.size;
+  document.getElementById('size-val').textContent = box.size;
+  document.getElementById('text-color').value = box.color;
+  document.getElementById('text-stroke').checked = box.stroke;
+}
+
+document.getElementById('text-content').addEventListener('focus', e => e.target.select());
+document.getElementById('text-content').addEventListener('input', e => {
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  box.text = e.target.value || ' ';
+  draw();
+});
+document.getElementById('text-size').addEventListener('input', e => {
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  box.size = parseInt(e.target.value, 10);
+  document.getElementById('size-val').textContent = box.size;
+  draw();
+});
+document.getElementById('text-color').addEventListener('input', e => {
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  box.color = e.target.value;
+  draw();
+});
+document.getElementById('text-stroke').addEventListener('change', e => {
+  const box = textBoxes.find(b => b.id === selectedId);
+  if (!box) return;
+  box.stroke = e.target.checked;
+  draw();
+});
+
+/* ---------- Boutons ---------- */
+document.getElementById('add-text-btn').addEventListener('click', () => {
+  if (!currentImage) return;
+  const box = {
+    id: uid(),
+    text: 'Texte ici',
+    x: canvas.width / 2,
+    y: textBoxes.length === 0 ? canvas.height * 0.15 : canvas.height * 0.85,
+    size: Math.round(canvas.width * 0.08),
+    color: '#ffffff',
+    stroke: true
+  };
+  textBoxes.push(box);
+  selectedId = box.id;
+  updateSelectionUI();
+  draw();
+});
+
+document.getElementById('delete-text-btn').addEventListener('click', () => {
+  textBoxes = textBoxes.filter(b => b.id !== selectedId);
+  selectedId = null;
+  updateSelectionUI();
+  draw();
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  octx.clearRect(0, 0, overlay.width, overlay.height); // pas de pointillés dans l'export
+  try {
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url; a.download = 'memcoddy.png';
+    a.click();
+  } catch (e) {
+    alert("Impossible d'exporter cette image (restriction de sécurité du navigateur sur ce template distant). Essaie d'importer l'image manuellement via 'Utiliser ma propre image'.");
+  }
+  drawOverlay();
+});
+
+/* ---------- Init ---------- */
+loadTemplates();
+lucide.createIcons();
+</script>
+</body>
+</html>
