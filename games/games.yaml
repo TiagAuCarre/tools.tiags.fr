@@ -1,0 +1,15 @@
+# =====================================================================
+#  GAMES.YAML — édite ce fichier pour ajouter/modifier tes jeux
+#  Même structure que tools.yaml : sections repliables, sous-sections,
+#  liens classiques ou blocs de code.
+# =====================================================================
+
+title: "Ma Game Box"
+description: "Tous mes jeux, launchers et sites gaming préférés, au même endroit."
+
+sections:
+  - title: "Jeux"
+    tools:
+      - title: "DumbPasswd"
+        url: "https://tools.tiags.fr/games/dumbpasswd/index.html"
+        desc: "100 règles de mot de passe stupides, une à la fois"
