@@ -212,11 +212,12 @@ function renderTool(tool) {
     </div>`;
   }
   const tag = tool.tag ? `<span class="tool-tag">${escapeHtml(tool.tag)}</span>` : '';
+  const downloadAttr = tool.download ? ` download${typeof tool.download === 'string' ? `="${escapeHtml(tool.download)}"` : ''}` : '';
   return `
-    <a class="tool-card glass glass-glow" href="${escapeHtml(tool.url || '#')}" target="_blank" rel="noopener">
+    <a class="tool-card glass glass-glow" href="${escapeHtml(tool.url || '#')}"${downloadAttr} ${tool.download ? '' : 'target="_blank" rel="noopener"'}>
       <div class="tool-head">
         <h4>${escapeHtml(tool.title)}</h4>
-        ${iconSvg(tool.icon || 'link', 'link-icon')}
+        ${iconSvg(tool.icon || (tool.download ? 'download' : 'link'), 'link-icon')}
       </div>
       ${tool.desc ? `<p class="tool-desc">${escapeHtml(tool.desc)}</p>` : ''}
       ${tag}
@@ -231,7 +232,7 @@ function renderToolsGrid(tools) {
 function renderSubsection(sub, idx) {
   const tools = renderToolsGrid(sub.tools);
   return `
-    <div class="subsection" data-searchtext="${escapeHtml((sub.title||'') + ' ' + (sub.tools||[]).map(t=>t.title+' '+(t.desc||'')).join(' ')).toLowerCase()}">
+    <div class="subsection" data-searchtext="${escapeHtml((sub.title||'') + ' ' + (sub.tools||[]).map(t=>t.title).join(' ')).toLowerCase()}">
       <div class="subsection-head" onclick="this.parentElement.classList.toggle('open'); syncMaxHeight(this.parentElement.querySelector('.subsection-body'))">
         <h3>${escapeHtml(sub.title)}</h3>
         ${iconSvg('link', 'chevron').replace('link-icon','chevron').replace(ICONS.link, '<polyline points="6 9 12 15 18 9"/>')}
@@ -248,8 +249,8 @@ function renderSection(section, idx) {
   const count = (section.tools ? section.tools.length : 0) + (section.subsections || []).reduce((a,s)=>a+(s.tools?s.tools.length:0),0);
   const searchText = [
     section.title || '',
-    ...(section.tools || []).map(t => t.title + ' ' + (t.desc || '')),
-    ...(section.subsections || []).flatMap(s => [s.title, ...(s.tools||[]).map(t=>t.title+' '+(t.desc||''))])
+    ...(section.tools || []).map(t => t.title),
+    ...(section.subsections || []).flatMap(s => [s.title, ...(s.tools||[]).map(t=>t.title)])
   ].join(' ').toLowerCase();
 
   return `

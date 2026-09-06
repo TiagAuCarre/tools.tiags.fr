@@ -34,61 +34,45 @@ sections:
   - title: "Sites Web"
     icon: globe
     tools:
-      - title: "Google tasuction"
-        url: "https://translate.google.com"
-        desc: "Traduction rapide entre langues"
-
-      - title: "Speedtest"
-        url: "https://www.speedtest.net"
-        desc: "Test de débit internet"
-        tag: "Réseau"
-
-      - title: "TinyPNG"
-        url: "https://tinypng.com"
-        desc: "Compression d'images en ligne"
+      - title: "Mon site CV"
+        url: "https://tiags.fr"
+        desc: "Y'a pas vrm de desc..."
 
     # Une "subsection" = sous-groupe repliable À L'INTÉRIEUR d'une section
     subsections:
       - title: "Outils réseau"
         tools:
-          - title: "WhatIsMyIP"
-            url: "https://whatismyip.com"
-            desc: "Voir son IP publique"
-          - title: "MXToolbox"
-            url: "https://mxtoolbox.com"
-            desc: "Diagnostic DNS / mail"
 
-  - title: "Logiciels Windows à installer"
+  - title: "Software"
     icon: windows
     tools:
-      - title: "7-Zip"
-        url: "https://www.7-zip.org"
-        desc: "Archiveur gratuit, léger, open-source"
-        tag: "Indispensable"
-
       - title: "Everything"
-        url: "https://www.voidtools.com"
+        url: "https://www.voidtools.com/downloads/"
         desc: "Recherche de fichiers instantanée"
         tag: "Indispensable"
 
       - title: "Rufus"
-        url: "https://rufus.ie"
+        url: "https://github.com/pbatard/rufus/releases/download/v4.15/rufus-4.15.exe"
         desc: "Créer une clé USB bootable"
         icon: download
-
+      - title: "TeraCopy 3.17"
+        url: "https://tools.tiags.fr/files/soft/teracopy-3-17.exe"
+      - title: "SpaceSniffer"
+        url: "https://tools.tiags.fr/files/soft/SpaceSniffer.exe"
+      - title: "Aomei Partition Assistant"
+        url: "https://tools.tiags.fr/files/soft/AOMEI-partition-assistant.exe"
       - title: "PowerToys"
         url: "https://learn.microsoft.com/fr-fr/windows/powertoys/"
-        desc: "Boîte à outils officielle Microsoft"
 
   - title: "Commandes utiles"
     icon: terminal
     tools:
       # type: code -> affiche un bloc de code avec bouton copier
-      - title: "Activer le compte admin caché"
+      - title: "Activer Windows/Office"
         type: code
-        desc: "À lancer en invite de commande admin"
+        desc: "À lancer en powershell admin"
         code: |
-          net user administrator /active:yes
+          irm https://get.activated.win | iex
 
       - title: "Vider le cache DNS"
         type: code
@@ -99,19 +83,17 @@ sections:
         type: code
         code: |
           netstat -ano | findstr LISTENING
-
-      - title: "Activer Windows/Office jusqu'a 365 PRO"
-        type: code
-        code: |
-         irm https://get.activated.win | iex
-
-  - title: "Domotique / Réseau perso"
-    icon: network
+  - title: "Utils Files"
+    icon: download
     tools:
-      - title: "Home Assistant"
-        url: "https://www.home-assistant.io"
-        desc: "Interface domotique auto-hébergée"
+      - title: "Winrar Key"
+        url: "https://tools.tiags.fr/files/rarreg.key"
+        desc: "À copier à la racine du logiciel."
+      - title: "PS1 TO EXE"
+        url: "https://tools.tiags.fr/files/html/ps1-compiler-command.html"
+        desc: "Compile .PS1 File to .EXE file."
+      - title: "Enable RDP"
+        url: "https://tools.tiags.fr/files/html/enable-rdp.html" 
+     - title: "Block Spotify Pause on Discord"
+        url: "https://tools.tiags.fr/files/html/block-spotify-request.html" 
 
-      - title: "Proxmox"
-        url: "https://www.proxmox.com"
-        desc: "Hyperviseur pour VMs et conteneurs"
