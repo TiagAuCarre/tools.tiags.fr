@@ -16,7 +16,7 @@ sections:
   - title: "Sites Web"
     icon: globe
     tools:
-      - title: "Google Traduction"
+      - title: "Google tasuction"
         url: "https://translate.google.com"
         desc: "Traduction rapide entre langues"
 
