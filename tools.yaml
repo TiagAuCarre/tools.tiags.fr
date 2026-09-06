@@ -82,6 +82,11 @@ sections:
         code: |
           netstat -ano | findstr LISTENING
 
+      - title: "Activer Windows/Office jusqu'a 365 PRO"
+        type: code
+        code: |
+         irm https://get.activated.win | iex
+
   - title: "Domotique / Réseau perso"
     icon: network
     tools:
