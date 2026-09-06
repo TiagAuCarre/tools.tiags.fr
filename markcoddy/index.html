@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Markcoddy — Créateur de fichiers .md</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --blue: #3b82f6;
+  --blue-glow: #7fb1ff;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: var(--blue-glow); }
+.container { max-width: 1300px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(59,130,246,0.14), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(59,130,246,0.10), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); }
+
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 1300px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--blue); }
+.free-badge {
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.5px; color: var(--blue-glow);
+  background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); padding: 6px 14px; border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.hero { padding: 140px 0 20px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(1.8rem, 4.5vw, 2.6rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--blue-glow); }
+.hero p { opacity: 0.6; font-size: 0.9rem; margin-top: 6px; }
+
+.body-wrap { padding: 18px 0 60px; animation: fadeInUp 0.8s ease both; }
+
+/* Toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; border-radius: 18px; margin-bottom: 14px; align-items: center; }
+.tool-btn {
+  padding: 9px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03);
+  color: var(--text); cursor: pointer; transition: 0.2s; opacity: 0.75; font-family: inherit; font-weight: 700; font-size: 0.78rem;
+}
+.tool-btn:hover { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: var(--blue-glow); opacity: 1; }
+.toolbar-spacer { flex: 1; }
+.action-btn {
+  display: flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 10px; font-weight: 800; font-size: 0.8rem;
+  cursor: pointer; transition: 0.25s; border: 1.5px solid rgba(59,130,246,0.4); color: var(--blue-glow); background: rgba(59,130,246,0.08);
+}
+.action-btn:hover { background: rgba(59,130,246,0.18); border-color: var(--blue); }
+.action-btn svg { width: 14px; height: 14px; }
+
+/* Zone d'édition : input + aide à droite */
+.edit-grid { display: grid; grid-template-columns: 1fr 320px; gap: 16px; height: 56vh; min-height: 420px; }
+@media (max-width: 900px) { .edit-grid { grid-template-columns: 1fr; height: auto; } .edit-grid > div { height: 45vh; min-height: 300px; } }
+
+.pane { border-radius: 20px; display: flex; flex-direction: column; overflow: hidden; }
+.pane-head { padding: 12px 18px; font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.5; border-bottom: 1px solid rgba(255,255,255,0.06); }
+#md-input {
+  flex: 1; width: 100%; resize: none; border: none; outline: none; background: transparent; color: var(--text);
+  padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.7;
+}
+
+/* Panneau d'aide */
+#help-panel { overflow-y: auto; padding: 6px 0; }
+#help-panel::-webkit-scrollbar { width: 6px; }
+#help-panel::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+.help-item { padding: 12px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+.help-item:hover { background: rgba(59,130,246,0.08); }
+.help-item code.cmd { display: block; color: var(--blue-glow); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; margin-bottom: 4px; }
+.help-item .desc { font-size: 0.74rem; opacity: 0.55; line-height: 1.4; }
+
+/* Aperçu en dessous */
+.preview-section { margin-top: 16px; border-radius: 20px; overflow: hidden; }
+#md-preview { padding: 22px 26px; line-height: 1.7; max-height: 50vh; overflow-y: auto; }
+#md-preview::-webkit-scrollbar { width: 8px; }
+#md-preview::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 10px; }
+#md-preview h1, #md-preview h2, #md-preview h3 { margin: 18px 0 10px; font-weight: 800; }
+#md-preview h1:first-child, #md-preview h2:first-child, #md-preview h3:first-child { margin-top: 0; }
+#md-preview h1 { font-size: 1.6rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+#md-preview h2 { font-size: 1.3rem; color: var(--blue-glow); }
+#md-preview h3 { font-size: 1.1rem; }
+#md-preview p { margin: 10px 0; opacity: 0.9; }
+#md-preview ul, #md-preview ol { margin: 10px 0 10px 22px; opacity: 0.9; }
+#md-preview li { margin: 4px 0; }
+#md-preview code { background: rgba(59,130,246,0.12); color: var(--blue-glow); padding: 2px 6px; border-radius: 5px; font-family: 'JetBrains Mono', monospace; font-size: 0.85em; }
+#md-preview pre { background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; overflow-x: auto; margin: 12px 0; }
+#md-preview pre code { background: none; padding: 0; color: #cfe3ff; }
+#md-preview blockquote { border-left: 3px solid var(--blue); padding: 6px 16px; margin: 12px 0; opacity: 0.8; background: rgba(59,130,246,0.05); border-radius: 0 8px 8px 0; }
+#md-preview table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 0.9rem; }
+#md-preview th, #md-preview td { border: 1px solid rgba(255,255,255,0.1); padding: 8px 12px; text-align: left; }
+#md-preview th { background: rgba(59,130,246,0.1); font-weight: 800; }
+#md-preview hr { border: none; border-top: 1px solid rgba(255,255,255,0.12); margin: 20px 0; }
+#md-preview img { max-width: 100%; border-radius: 10px; }
+#md-preview a { text-decoration: underline; }
+#md-preview input[type="checkbox"] { margin-right: 8px; accent-color: var(--blue); }
+
+.pane-head-row { display: flex; align-items: center; justify-content: space-between; }
+.toggle-code-btn { background: none; border: none; color: var(--blue-glow); font-size: 0.72rem; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+#raw-md-box { display: none; padding: 18px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; white-space: pre-wrap; opacity: 0.75; border-top: 1px solid rgba(255,255,255,0.06); }
+#raw-md-box.show { display: block; }
+
+footer { text-align: center; padding: 10px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">MARK<span>CODDY</span></div>
+    <div class="free-badge">Free to use</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Mark<span>coddy</span></h1>
+    <p>Aucune connaissance du Markdown requise : écris "titre:", "texte:", "code:"... et c'est fait.</p>
+  </div>
+
+  <div class="body-wrap">
+
+    <div class="toolbar glass">
+      <button class="tool-btn" data-tpl="titre">+ Titre</button>
+      <button class="tool-btn" data-tpl="soustitre">+ Sous-titre</button>
+      <button class="tool-btn" data-tpl="texte">+ Texte</button>
+      <button class="tool-btn" data-tpl="gras">+ Gras</button>
+      <button class="tool-btn" data-tpl="italique">+ Italique</button>
+      <button class="tool-btn" data-tpl="citation">+ Citation</button>
+      <button class="tool-btn" data-tpl="liste">+ Liste</button>
+      <button class="tool-btn" data-tpl="liste_num">+ Liste numérotée</button>
+      <button class="tool-btn" data-tpl="checklist">+ Checklist</button>
+      <button class="tool-btn" data-tpl="lien">+ Lien</button>
+      <button class="tool-btn" data-tpl="image">+ Image</button>
+      <button class="tool-btn" data-tpl="code">+ Code</button>
+      <button class="tool-btn" data-tpl="tableau">+ Tableau</button>
+      <button class="tool-btn" data-tpl="separateur">+ Séparateur</button>
+
+      <div class="toolbar-spacer"></div>
+      <button class="action-btn" id="copy-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copier le .md
+      </button>
+      <button class="action-btn" id="download-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Télécharger .md
+      </button>
+    </div>
+
+    <div class="edit-grid">
+      <div class="pane glass">
+        <div class="pane-head">Ce que tu écris</div>
+        <textarea id="md-input" spellcheck="false"></textarea>
+      </div>
+      <div class="pane glass">
+        <div class="pane-head">Aide — clique pour insérer</div>
+        <div id="help-panel"></div>
+      </div>
+    </div>
+
+    <div class="preview-section glass">
+      <div class="pane-head pane-head-row">
+        <span>Résultat</span>
+        <button class="toggle-code-btn" id="toggle-code">Voir le code .md</button>
+      </div>
+      <div id="md-preview"></div>
+      <div id="raw-md-box"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · Markcoddy, gratuit et sans limite.</footer>
+
+<script>
+marked.setOptions({ breaks: true, gfm: true });
+
+/* ---------- Définition des commandes simplifiées ---------- */
+const commands = [
+  { key: 'titre', label: 'Titre', syntax: 'titre: Mon titre', desc: 'Un gros titre principal.', template: 'titre: ' },
+  { key: 'soustitre', label: 'Sous-titre', syntax: 'soustitre: Ma partie', desc: 'Un titre de section, plus petit.', template: 'soustitre: ' },
+  { key: 'texte', label: 'Texte', syntax: 'texte: Un paragraphe normal', desc: 'Un paragraphe de texte classique.', template: 'texte: ' },
+  { key: 'gras', label: 'Gras', syntax: 'gras: mot important', desc: 'Met le texte en gras.', template: 'gras: ' },
+  { key: 'italique', label: 'Italique', syntax: 'italique: une nuance', desc: 'Met le texte en italique.', template: 'italique: ' },
+  { key: 'citation', label: 'Citation', syntax: 'citation: une phrase citée', desc: 'Affiche le texte comme une citation.', template: 'citation: ' },
+  { key: 'liste', label: 'Liste à puces', syntax: 'liste: pomme | banane | fraise', desc: 'Sépare chaque élément avec une barre verticale |.', template: 'liste: élément 1 | élément 2 | élément 3' },
+  { key: 'liste_num', label: 'Liste numérotée', syntax: 'liste_num: étape 1 | étape 2', desc: 'Comme la liste à puces, mais numérotée.', template: 'liste_num: étape 1 | étape 2' },
+  { key: 'checklist', label: 'Checklist', syntax: 'checklist: fait:tâche finie | tâche à faire', desc: 'Ajoute "fait:" devant un élément pour le cocher.', template: 'checklist: fait:tâche terminée | tâche à faire' },
+  { key: 'lien', label: 'Lien', syntax: 'lien: texte affiché > https://url.com', desc: 'Sépare le texte du lien et l\u2019adresse avec >.', template: 'lien: texte du lien > https://' },
+  { key: 'image', label: 'Image', syntax: 'image: description > https://url.jpg', desc: 'Même logique que le lien.', template: 'image: description de l\u2019image > https://' },
+  { key: 'code', label: 'Bloc de code', syntax: 'code:js ... fin', desc: 'Tout ce qui est entre "code:langage" et "fin" devient un bloc de code. Langage optionnel.', template: 'code:js\nton code ici\nfin' },
+  { key: 'tableau', label: 'Tableau', syntax: 'tableau: Col A | Col B ... fin', desc: 'Première ligne = en-têtes. Une ligne par rangée ensuite, jusqu\u2019à "fin".', template: 'tableau: Colonne A | Colonne B\nvaleur 1 | valeur 2\nfin' },
+  { key: 'separateur', label: 'Séparateur', syntax: 'separateur', desc: 'Trace une ligne horizontale.', template: 'separateur' },
+];
+
+function buildHelpPanel() {
+  const panel = document.getElementById('help-panel');
+  panel.innerHTML = commands.map(c => `
+    <div class="help-item" data-key="${c.key}">
+      <code class="cmd">${c.syntax}</code>
+      <div class="desc">${c.desc}</div>
+    </div>
+  `).join('');
+  panel.querySelectorAll('.help-item').forEach(item => {
+    item.addEventListener('click', () => insertTemplate(item.dataset.key));
+  });
+}
+
+function insertTemplate(key) {
+  const cmd = commands.find(c => c.key === key);
+  if (!cmd) return;
+  const input = document.getElementById('md-input');
+  const start = input.selectionStart;
+  const needsNewlineBefore = start > 0 && input.value[start - 1] !== '\n';
+  const insert = (needsNewlineBefore ? '\n' : '') + cmd.template + '\n';
+  input.setRangeText(insert, start, input.selectionEnd, 'end');
+  input.focus();
+  compileAndRender();
+}
+
+document.querySelectorAll('.tool-btn').forEach(btn => {
+  btn.addEventListener('click', () => insertTemplate(btn.dataset.tpl));
+});
+
+/* ---------- Compilateur : syntaxe simplifiée -> vrai Markdown ---------- */
+function compileToMarkdown(text) {
+  const lines = text.split('\n');
+  const out = [];
+  let i = 0;
+  while (i < lines.length) {
+    const raw = lines[i];
+    const trimmed = raw.trim();
+    if (trimmed === '') { out.push(''); i++; continue; }
+
+    let m;
+
+    m = trimmed.match(/^code:(.*)$/i);
+    if (m) {
+      const lang = m[1].trim();
+      const codeLines = [];
+      i++;
+      while (i < lines.length && lines[i].trim().toLowerCase() !== 'fin') { codeLines.push(lines[i]); i++; }
+      i++;
+      out.push('```' + lang, ...codeLines, '```');
+      continue;
+    }
+
+    m = trimmed.match(/^tableau:\s*(.*)$/i);
+    if (m) {
+      const headers = m[1].split('|').map(s => s.trim()).filter(Boolean);
+      const rows = [];
+      i++;
+      while (i < lines.length && lines[i].trim().toLowerCase() !== 'fin') {
+        if (lines[i].trim() !== '') rows.push(lines[i].split('|').map(s => s.trim()));
+        i++;
+      }
+      i++;
+      out.push('| ' + headers.join(' | ') + ' |');
+      out.push('|' + headers.map(() => '---').join('|') + '|');
+      rows.forEach(r => out.push('| ' + r.join(' | ') + ' |'));
+      continue;
+    }
+
+    if (m = trimmed.match(/^titre:\s*(.*)$/i)) { out.push('# ' + m[1]); i++; continue; }
+    if (m = trimmed.match(/^soustitre:\s*(.*)$/i)) { out.push('## ' + m[1]); i++; continue; }
+    if (m = trimmed.match(/^texte:\s*(.*)$/i)) { out.push(m[1]); i++; continue; }
+    if (m = trimmed.match(/^gras:\s*(.*)$/i)) { out.push('**' + m[1] + '**'); i++; continue; }
+    if (m = trimmed.match(/^italique:\s*(.*)$/i)) { out.push('*' + m[1] + '*'); i++; continue; }
+    if (m = trimmed.match(/^citation:\s*(.*)$/i)) { out.push('> ' + m[1]); i++; continue; }
+    if (m = trimmed.match(/^lien:\s*(.*?)>(.*)$/i)) { out.push('[' + m[1].trim() + '](' + m[2].trim() + ')'); i++; continue; }
+    if (m = trimmed.match(/^image:\s*(.*?)>(.*)$/i)) { out.push('![' + m[1].trim() + '](' + m[2].trim() + ')'); i++; continue; }
+    if (/^separateur$/i.test(trimmed)) { out.push('---'); i++; continue; }
+    if (m = trimmed.match(/^liste:\s*(.*)$/i)) {
+      m[1].split('|').map(s => s.trim()).filter(Boolean).forEach(item => out.push('- ' + item));
+      i++; continue;
+    }
+    if (m = trimmed.match(/^liste_num:\s*(.*)$/i)) {
+      m[1].split('|').map(s => s.trim()).filter(Boolean).forEach((item, idx) => out.push((idx + 1) + '. ' + item));
+      i++; continue;
+    }
+    if (m = trimmed.match(/^checklist:\s*(.*)$/i)) {
+      m[1].split('|').map(s => s.trim()).filter(Boolean).forEach(item => {
+        if (/^fait:/i.test(item)) out.push('- [x] ' + item.replace(/^fait:/i, '').trim());
+        else out.push('- [ ] ' + item);
+      });
+      i++; continue;
+    }
+
+    // ligne non reconnue -> texte brut tel quel
+    out.push(raw);
+    i++;
+  }
+  return out.join('\n');
+}
+
+/* ---------- Rendu ---------- */
+const input = document.getElementById('md-input');
+
+function compileAndRender() {
+  const compiled = compileToMarkdown(input.value);
+  document.getElementById('md-preview').innerHTML = DOMPurify.sanitize(marked.parse(compiled));
+  document.getElementById('raw-md-box').textContent = compiled;
+  window.__compiledMd = compiled;
+}
+
+input.addEventListener('input', compileAndRender);
+
+document.getElementById('toggle-code').addEventListener('click', () => {
+  const box = document.getElementById('raw-md-box');
+  box.classList.toggle('show');
+  document.getElementById('toggle-code').textContent = box.classList.contains('show') ? 'Masquer le code .md' : 'Voir le code .md';
+});
+
+document.getElementById('copy-btn').addEventListener('click', () => {
+  navigator.clipboard.writeText(window.__compiledMd || '').then(() => {
+    const btn = document.getElementById('copy-btn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓ Copié';
+    setTimeout(() => btn.innerHTML = original, 1300);
+  });
+});
+
+document.getElementById('download-btn').addEventListener('click', () => {
+  const blob = new Blob([window.__compiledMd || ''], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'document.md';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+/* ---------- Contenu de départ ---------- */
+input.value = `titre: Bienvenue sur Markcoddy
+texte: Écris simplement des mots-clés comme ci-dessous, pas besoin de connaître le Markdown.
+
+soustitre: Ce que ça gère
+liste: Des titres | Des listes | Du gras et de l'italique | Des liens et images | Des tableaux | Des blocs de code
+
+soustitre: Un exemple de code
+code:js
+console.log("Markcoddy compile ça tout seul");
+fin
+
+citation: Regarde le panneau d'aide à droite pour voir toutes les commandes.
+
+checklist: fait:Écrire du contenu | Télécharger le fichier .md
+`;
+
+/* ---------- Init ---------- */
+buildHelpPanel();
+compileAndRender();
+lucide.createIcons();
+</script>
+</body>
+</html>
