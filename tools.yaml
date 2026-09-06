@@ -89,11 +89,11 @@ sections:
       - title: "Winrar Key"
         url: "https://tools.tiags.fr/files/rarreg.key"
         desc: "À copier à la racine du logiciel."
-      - title: "PS1 TO EXE"
+      - title: "PS2EXE"
         url: "https://tools.tiags.fr/files/html/ps1-compiler-command.html"
         desc: "Compile .PS1 File to .EXE file."
       - title: "Enable RDP"
         url: "https://tools.tiags.fr/files/html/enable-rdp.html" 
-     - title: "Block Spotify Pause on Discord"
+      - title: "Block Spotify Pause on Discord"
         url: "https://tools.tiags.fr/files/html/block-spotify-request.html" 
 
