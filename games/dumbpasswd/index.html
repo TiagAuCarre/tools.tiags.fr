@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DumbPasswd — 100 règles de mot de passe stupides</title>
+<link href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --glass: rgba(255,255,255,0.05);
+  --border: rgba(255,255,255,0.10);
+  --orange: #ff6a1a;
+  --orange-glow: #ffa366;
+  --green: #2ee6a6;
+  --text: #f5f2ed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'League Spartan', sans-serif; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+a { color: inherit; text-decoration: none; }
+.container { max-width: 900px; margin: auto; padding: 0 20px; position: relative; z-index: 2; }
+
+.orb { position: fixed; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+.orb-1 { width: 550px; height: 550px; background: radial-gradient(circle, rgba(255,106,26,0.14), transparent 70%); top: -180px; left: -160px; animation: orbFloat 16s ease-in-out infinite; }
+.orb-2 { width: 450px; height: 450px; background: radial-gradient(circle, rgba(255,106,26,0.10), transparent 70%); bottom: -140px; right: -120px; animation: orbFloat2 19s ease-in-out infinite; }
+@keyframes orbFloat  { 0%,100%{transform:translate(0,0)} 50%{transform:translate(40px,-25px)} }
+@keyframes orbFloat2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-30px,20px)} }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes ruleIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+@keyframes pop { 0%{transform:scale(1)} 50%{transform:scale(1.06)} 100%{transform:scale(1)} }
+
+.glass { background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border); }
+
+header { position: fixed; top: 0; left: 0; right: 0; z-index: 999; padding: 18px 20px 0; }
+.header-pill {
+  max-width: 900px; margin: auto; display: flex; justify-content: space-between; align-items: center;
+  background: rgba(10,10,10,0.55); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 12px 24px;
+}
+.logo { font-weight: 900; letter-spacing: 1px; font-size: 1.05rem; }
+.logo span { color: var(--orange); }
+.badge-stupide {
+  font-size: 0.72rem; font-weight: 900; letter-spacing: 0.8px; color: #1a0a00;
+  background: var(--orange); padding: 6px 14px; border-radius: 999px; text-transform: uppercase;
+}
+
+.hero { padding: 150px 0 16px; text-align: center; animation: fadeInUp 0.7s ease both; }
+.hero h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); font-weight: 900; text-transform: uppercase; letter-spacing: -0.5px; }
+.hero h1 span { color: var(--orange-glow); }
+.hero p { opacity: 0.6; font-size: 0.92rem; margin-top: 8px; }
+
+.body-wrap { padding: 20px 0 70px; animation: fadeInUp 0.8s ease both; }
+
+.input-panel { padding: 26px; border-radius: 24px; margin-bottom: 16px; }
+#pw-input {
+  width: 100%; padding: 16px 18px; border-radius: 14px; border: 2px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: var(--text); font-size: 1.1rem; font-weight: 700; outline: none;
+  font-family: 'JetBrains Mono', monospace; transition: 0.2s;
+}
+#pw-input:focus { border-color: rgba(255,106,26,0.5); }
+#pw-input.invalid-shake { animation: shake 0.3s; border-color: #ff4444; }
+
+.progress-wrap { margin-top: 16px; }
+.progress-bar-bg { height: 14px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--orange), var(--green)); width: 0%; transition: width 0.35s ease; }
+.progress-label { display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.8rem; font-weight: 700; opacity: 0.6; }
+.progress-label b { color: var(--orange-glow); }
+
+.current-rule-panel { padding: 26px; border-radius: 24px; margin-bottom: 16px; min-height: 100px; }
+.current-rule-panel .rule-eyebrow { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--orange-glow); margin-bottom: 10px; }
+.current-rule-text { font-size: 1.25rem; font-weight: 800; animation: ruleIn 0.35s ease; }
+.win-panel { text-align: center; padding: 40px 26px; }
+.win-panel .emoji { font-size: 3rem; margin-bottom: 12px; animation: pop 0.6s ease; }
+.win-panel h2 { font-size: 1.4rem; font-weight: 900; color: var(--green); margin-bottom: 10px; }
+.win-panel p { opacity: 0.7; font-size: 0.95rem; }
+
+.history-panel { padding: 8px; border-radius: 20px; }
+.history-head { padding: 12px 16px 6px; font-size: 0.75rem; font-weight: 800; opacity: 0.5; text-transform: uppercase; letter-spacing: 0.5px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.history-toggle { font-size: 0.72rem; color: var(--orange-glow); font-weight: 800; }
+.history-list { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; }
+.history-list.show { max-height: 600px; overflow-y: auto; }
+.history-item { display: flex; align-items: center; gap: 10px; padding: 9px 16px; font-size: 0.82rem; opacity: 0.6; }
+.history-item .check-icon { width: 18px; height: 18px; border-radius: 50%; background: var(--green); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.history-item .check-icon svg { width: 10px; height: 10px; color: #05261c; }
+
+footer { text-align: center; padding: 20px 0 40px; opacity: 0.4; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header>
+  <div class="header-pill glass">
+    <div class="logo">DUMB<span>PASSWD</span></div>
+    <div class="badge-stupide">Stupide</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>DUMB<span>PASSWD</span></h1>
+    <p>100 règles. Une à la fois. Bon courage.</p>
+  </div>
+
+  <div class="body-wrap">
+
+    <div class="input-panel glass">
+      <input type="text" id="pw-input" placeholder="Commence à taper..." autocomplete="off" spellcheck="false">
+
+      <div class="progress-wrap">
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+        <div class="progress-label">
+          <span><b id="valid-count">0</b> / 100 règles validées</span>
+          <span id="progress-pct">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="current-rule-panel glass" id="current-rule-panel">
+      <div class="rule-eyebrow" id="rule-eyebrow">Règle 1 / 100</div>
+      <div class="current-rule-text" id="current-rule-text">Au moins 8 caractères</div>
+    </div>
+
+    <div class="history-panel glass">
+      <div class="history-head" id="history-head">
+        <span id="history-count">0 règle validée</span>
+        <span class="history-toggle" id="history-toggle">Afficher</span>
+      </div>
+      <div class="history-list" id="history-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<footer>© Tiago Meira — Tous droits réservés. · DumbPasswd, gratuit, stupide et sans limite.</footer>
+
+<script>
+function countVowels(s) { return (s.match(/[aeiouyAEIOUY]/g) || []).length; }
+function countConsonants(s) { return (s.match(/[a-zA-Z]/g) || []).length - countVowels(s); }
+function digitSum(s) { return (s.match(/[0-9]/g) || []).reduce((a, d) => a + parseInt(d), 0); }
+function isPrime(n) { if (n < 2) return false; for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; }
+function romanChars(s) { return (s.match(/[IVXLCDM]/g) || []).length; }
+function greekChars(s) { return (s.match(/[\u0370-\u03FF]/g) || []).length; }
+function emojiChars(s) { return (s.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu) || []).length; }
+function hasConsecutiveRepeat(s) { for (let i = 0; i < s.length - 1; i++) if (s[i] === s[i+1]) return true; return false; }
+function uniqueChars(s) { return new Set(s.toLowerCase().replace(/\s/g,'')).size; }
+function countUpper(s) { return (s.match(/[A-Z]/g) || []).length; }
+function countDigits(s) { return (s.match(/[0-9]/g) || []).length; }
+function containsPalindrome(s, minLen) {
+  for (let len = minLen; len <= s.length; len++) {
+    for (let i = 0; i + len <= s.length; i++) {
+      const sub = s.slice(i, i + len).toLowerCase();
+      if (sub === sub.split('').reverse().join('') && /[a-z0-9]/.test(sub)) return true;
+    }
+  }
+  return false;
+}
+
+const rules = [];
+
+/* ---------- 1. Règles de base (classiques) ---------- */
+rules.push(
+  { label: 'Au moins 8 caractères', test: pw => pw.length >= 8 },
+  { label: 'Au moins une majuscule', test: pw => /[A-Z]/.test(pw) },
+  { label: 'Au moins une minuscule', test: pw => /[a-z]/.test(pw) },
+  { label: 'Au moins un chiffre', test: pw => /[0-9]/.test(pw) },
+  { label: 'Au moins un caractère spécial (!@#$%...)', test: pw => /[!@#$%^&*(),.?":{}|<>_\-+=~]/.test(pw) },
+  { label: 'Au moins 12 caractères en tout', test: pw => pw.length >= 12 }
+);
+
+/* ---------- 2. Règles "absurdes" écrites à la main ---------- */
+rules.push(
+  { label: 'Doit contenir le mot "banane" (dans n\'importe quelle casse)', test: pw => /banane/i.test(pw) },
+  { label: 'La somme de tous les chiffres doit être un nombre premier', test: pw => digitSum(pw) > 0 && isPrime(digitSum(pw)) },
+  { label: 'Le nombre de voyelles doit être pair', test: pw => countVowels(pw) > 0 && countVowels(pw) % 2 === 0 },
+  { label: 'Doit contenir au moins 2 chiffres romains (I, V, X, L, C, D, M)', test: pw => romanChars(pw) >= 2 },
+  { label: 'Doit contenir au moins une lettre grecque (α, β, Ω...)', test: pw => greekChars(pw) >= 1 },
+  { label: 'Doit contenir au moins un emoji 🐟', test: pw => emojiChars(pw) >= 1 },
+  { label: 'La première et la dernière lettre doivent être identiques', test: pw => pw.length >= 2 && pw[0].toLowerCase() === pw[pw.length - 1].toLowerCase() },
+  { label: 'La longueur totale doit être un multiple de 3', test: pw => pw.length > 0 && pw.length % 3 === 0 },
+  { label: 'Ne doit pas contenir "motdepasse", "123456" ou "azerty"', test: pw => !/motdepasse|123456|azerty/i.test(pw) },
+  { label: 'Doit contenir l\'année en cours (2026)', test: pw => pw.includes('2026') },
+  { label: 'Ne doit jamais avoir été utilisé un mardi', test: () => true },
+  { label: 'Doit contenir un nom de jour de la semaine (lundi, mardi...)', test: pw => /(lundi|mardi|mercredi|jeudi|vendredi|samedi|dimanche)/i.test(pw) },
+  { label: 'Doit contenir un nom de mois (janvier, février...)', test: pw => /(janvier|février|mars|avril|mai|juin|juillet|août|septembre|octobre|novembre|décembre)/i.test(pw) },
+  { label: 'Ne doit contenir aucune lettre "e"', test: pw => pw.length > 0 && !/e/i.test(pw) },
+  { label: 'Doit contenir au moins 3 consonnes différentes', test: pw => new Set((pw.toLowerCase().match(/[bcdfghjklmnpqrstvwxyz]/g) || [])).size >= 3 },
+  { label: 'Ne doit pas avoir deux caractères identiques consécutifs', test: pw => pw.length > 0 && !hasConsecutiveRepeat(pw) },
+  { label: 'Le nombre de majuscules doit être égal au nombre de chiffres', test: pw => countUpper(pw) === countDigits(pw) && countDigits(pw) > 0 },
+  { label: 'Doit contenir un palindrome d\'au moins 3 caractères (ex: "aba")', test: pw => containsPalindrome(pw, 3) },
+  { label: 'Doit contenir les 3 premiers chiffres de π (314)', test: pw => pw.includes('314') },
+  { label: 'Doit contenir les 3 premiers chiffres du nombre d\'or (161)', test: pw => pw.includes('161') },
+  { label: 'Doit rimer avec "paix" (on te fait confiance)', test: () => true },
+  { label: 'Le mot de passe doit être plus long que "flemme"', test: pw => pw.length > 'flemme'.length },
+  { label: 'Doit contenir au moins 5 voyelles au total', test: pw => countVowels(pw) >= 5 },
+  { label: 'Doit contenir au moins 4 caractères uniques différents', test: pw => uniqueChars(pw) >= 4 },
+  { label: 'Le nombre total de caractères doit être un nombre premier', test: pw => isPrime(pw.length) },
+  { label: 'Doit contenir un symbole monétaire (€, $, £...)', test: pw => /[€$£¥]/.test(pw) },
+  { label: 'Doit contenir au moins une parenthèse ouvrante et une fermante', test: pw => pw.includes('(') && pw.includes(')') },
+  { label: 'Ne doit contenir aucun chiffre pair', test: pw => !/[02468]/.test(pw) },
+  { label: 'Doit contenir au moins un chiffre pair ET un chiffre impair', test: pw => /[02468]/.test(pw) && /[13579]/.test(pw) },
+  { label: 'Doit contenir la sous-chaîne "xy" ou "yx"', test: pw => /xy|yx/i.test(pw) },
+  { label: 'Le mot de passe ne doit pas être un simple mot du dictionnaire', test: pw => pw.length > 0 && !/^[a-z]+$/i.test(pw) },
+  { label: 'Doit contenir un caractère accentué (é, è, ê, à, ù...)', test: pw => /[éèêàùâîôûëïüç]/i.test(pw) },
+  { label: 'Doit contenir un nombre à deux chiffres qui est un carré parfait (16, 25, 36, 49, 64, 81)', test: pw => /(16|25|36|49|64|81)/.test(pw) },
+  { label: 'Doit contenir au moins 2 espaces', test: pw => (pw.match(/ /g) || []).length >= 2 },
+  { label: 'Ne doit contenir aucun espace', test: pw => !pw.includes(' ') },
+  { label: 'Doit se terminer par un point d\'exclamation', test: pw => pw.endsWith('!') },
+  { label: 'Doit commencer par une majuscule', test: pw => /^[A-Z]/.test(pw) },
+  { label: 'Doit contenir un caractère répété exactement 3 fois', test: pw => {
+      const counts = {};
+      for (const c of pw.toLowerCase()) counts[c] = (counts[c] || 0) + 1;
+      return Object.values(counts).includes(3);
+    } },
+  { label: 'Doit contenir "42" (la réponse à tout)', test: pw => pw.includes('42') },
+  { label: 'La somme des positions alphabétiques des lettres doit être divisible par 7', test: pw => {
+      let sum = 0;
+      for (const c of pw.toLowerCase()) { const code = c.charCodeAt(0) - 96; if (code >= 1 && code <= 26) sum += code; }
+      return sum > 0 && sum % 7 === 0;
+    } }
+);
+
+/* ---------- 3. Règles générées : doit contenir tel mot ---------- */
+const mots = ['pizza','ninja','robot','dragon','licorne','tacos','disco','gouda','kayak','yeti',
+  'cactus','panda','sushi','wombat','nuage','comete','fusee','vampire','zombie','extraterrestre'];
+mots.forEach(mot => {
+  rules.push({ label: `Doit contenir le mot "${mot}"`, test: pw => new RegExp(mot, 'i').test(pw) });
+});
+
+/* ---------- 4. Règles générées : doit contenir telle lettre N fois ---------- */
+const lettresCibles = [['a',2],['e',2],['o',2],['s',2],['t',2],['n',2],['r',2],['i',2],['l',2],['m',2],['b',1],['c',1],['d',1],['g',1],['p',1]];
+lettresCibles.forEach(([lettre, n]) => {
+  rules.push({ label: `Doit contenir la lettre "${lettre}" au moins ${n} fois`, test: pw => (pw.toLowerCase().match(new RegExp(lettre, 'g')) || []).length >= n });
+});
+
+/* ---------- 5. Règles générées : longueur multiple de N ---------- */
+[2,4,5,6,7].forEach(n => {
+  rules.push({ label: `La longueur totale doit être un multiple de ${n}`, test: pw => pw.length > 0 && pw.length % n === 0 });
+});
+
+/* ---------- 6. Règles supplémentaires pour arriver à 100 ---------- */
+rules.push(
+  { label: 'Doit contenir au moins un chiffre romain valant plus de 100 (C, D, M)', test: pw => /[CDM]/.test(pw) },
+  { label: 'Doit contenir un smiley fait de caractères classiques (ex: :) ou :D)', test: pw => /[:;]-?[)(D3PpOo]/.test(pw) },
+  { label: 'Le nombre de consonnes doit être supérieur au nombre de voyelles', test: pw => countConsonants(pw) > countVowels(pw) },
+  { label: 'Doit contenir un nombre à 3 chiffres qui est un palindrome (ex: 101, 232)', test: pw => {
+      const nums = pw.match(/\d{3}/g) || [];
+      return nums.some(n => n === n.split('').reverse().join(''));
+    } },
+  { label: 'Doit contenir au moins une lettre "k" ou "w" (les lettres qu\'on utilise jamais)', test: pw => /[kw]/i.test(pw) },
+  { label: 'Le mot de passe entier ne doit pas être un palindrome (ce serait trop facile)', test: pw => pw.length === 0 || pw.toLowerCase() !== pw.toLowerCase().split('').reverse().join('') },
+  { label: 'Doit contenir un tiret du 6 (-) ET un underscore (_)', test: pw => pw.includes('-') && pw.includes('_') },
+  { label: 'Doit contenir au moins 2 caractères différents non-alphanumériques', test: pw => new Set((pw.match(/[^a-zA-Z0-9]/g) || [])).size >= 2 },
+  { label: 'La différence entre majuscules et minuscules doit être exactement 1', test: pw => Math.abs(countUpper(pw) - (pw.match(/[a-z]/g) || []).length) === 1 },
+  { label: 'Doit contenir un signe de ponctuation à la fin ET au début', test: pw => /[!?.,;:]/.test(pw[0] || '') && /[!?.,;:]/.test(pw[pw.length-1] || '') },
+  { label: 'Doit contenir "coddy" quelque part (fidélité oblige)', test: pw => /coddy/i.test(pw) },
+  { label: 'Doit contenir un nombre binaire d\'au moins 4 chiffres (que des 0 et des 1)', test: pw => /[01]{4,}/.test(pw) },
+  { label: 'Doit contenir au moins 6 caractères qui ne se répètent nulle part ailleurs', test: pw => {
+      const counts = {};
+      for (const c of pw.toLowerCase()) counts[c] = (counts[c] || 0) + 1;
+      return Object.values(counts).filter(c => c === 1).length >= 6;
+    } },
+  { label: 'Le mot de passe doit franchement donner envie de fermer l\'onglet', test: () => true }
+);
+
+
+/* ---------- Logique d'affichage : une règle à la fois ---------- */
+function getCurrentIndex(pw) {
+  for (let i = 0; i < rules.length; i++) {
+    if (!rules[i].test(pw)) return i;
+  }
+  return rules.length;
+}
+
+function render() {
+  const pw = document.getElementById('pw-input').value;
+  const idx = getCurrentIndex(pw);
+  const pct = Math.round((idx / rules.length) * 100);
+
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('valid-count').textContent = idx;
+  document.getElementById('progress-pct').textContent = pct + '%';
+  document.getElementById('history-count').textContent = `${idx} règle${idx > 1 ? 's' : ''} validée${idx > 1 ? 's' : ''}`;
+
+  const historyList = document.getElementById('history-list');
+  historyList.innerHTML = rules.slice(0, idx).map(r => `
+    <div class="history-item">
+      <div class="check-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      ${r.label}
+    </div>
+  `).join('');
+
+  const panel = document.getElementById('current-rule-panel');
+  if (idx >= rules.length) {
+    panel.innerHTML = `
+      <div class="win-panel">
+        <div class="emoji">🏆</div>
+        <h2>FÉLICITATIONS. Tu as vaincu les 100 règles.</h2>
+        <p>Ce mot de passe est probablement plus solide que ta volonté de vivre à ce stade. Bien joué.</p>
+      </div>`;
+  } else {
+    const currentIdxDisplay = document.getElementById('rule-eyebrow');
+    if (!currentIdxDisplay) {
+      panel.innerHTML = `
+        <div class="rule-eyebrow" id="rule-eyebrow"></div>
+        <div class="current-rule-text" id="current-rule-text"></div>`;
+    }
+    document.getElementById('rule-eyebrow').textContent = `Règle ${idx + 1} / ${rules.length}`;
+    const textEl = document.getElementById('current-rule-text');
+    textEl.textContent = rules[idx].label;
+    textEl.style.animation = 'none';
+    void textEl.offsetWidth;
+    textEl.style.animation = 'ruleIn 0.35s ease';
+  }
+}
+
+document.getElementById('pw-input').addEventListener('input', render);
+
+document.getElementById('history-head').addEventListener('click', () => {
+  const list = document.getElementById('history-list');
+  const toggle = document.getElementById('history-toggle');
+  list.classList.toggle('show');
+  toggle.textContent = list.classList.contains('show') ? 'Masquer' : 'Afficher';
+});
+
+render();
+lucide.createIcons();
+</script>
+</body>
+</html>
