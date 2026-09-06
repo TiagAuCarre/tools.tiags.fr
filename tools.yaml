@@ -60,7 +60,7 @@ sections:
       - title: "SpaceSniffer"
         url: "https://tools.tiags.fr/files/soft/SpaceSniffer.exe"
       - title: "Aomei Partition Assistant"
-        url: "https://tools.tiags.fr/files/soft/AOMEI-partition-assistant.exe"
+        url: "https://raw.githubusercontent.com/tiagaucarre/tools.tiags.fr/big-files/big-files/AOMEI-partition-asssistant.exe"
       - title: "PowerToys"
         url: "https://learn.microsoft.com/fr-fr/windows/powertoys/"
 
