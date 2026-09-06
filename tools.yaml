@@ -1,0 +1,94 @@
+# =====================================================================
+#  TOOLS.YAML — édite ce fichier pour ajouter/modifier tes outils
+#  Aucune connaissance du code requise, juste respecter l'indentation.
+# =====================================================================
+
+title: "Ma Tool Box"
+description: "Tous mes outils, sites et logiciels préférés, au même endroit."
+
+sections:
+
+  # ------------------------------------------------------------------
+  # Une "section" = un gros bloc repliable. icon est optionnel.
+  # Icônes disponibles: globe, download, terminal, windows, wrench,
+  # code, gamepad, shield, folder, network, link
+  # ------------------------------------------------------------------
+  - title: "Sites Web"
+    icon: globe
+    tools:
+      - title: "Google Traduction"
+        url: "https://translate.google.com"
+        desc: "Traduction rapide entre langues"
+
+      - title: "Speedtest"
+        url: "https://www.speedtest.net"
+        desc: "Test de débit internet"
+        tag: "Réseau"
+
+      - title: "TinyPNG"
+        url: "https://tinypng.com"
+        desc: "Compression d'images en ligne"
+
+    # Une "subsection" = sous-groupe repliable À L'INTÉRIEUR d'une section
+    subsections:
+      - title: "Outils réseau"
+        tools:
+          - title: "WhatIsMyIP"
+            url: "https://whatismyip.com"
+            desc: "Voir son IP publique"
+          - title: "MXToolbox"
+            url: "https://mxtoolbox.com"
+            desc: "Diagnostic DNS / mail"
+
+  - title: "Logiciels Windows à installer"
+    icon: windows
+    tools:
+      - title: "7-Zip"
+        url: "https://www.7-zip.org"
+        desc: "Archiveur gratuit, léger, open-source"
+        tag: "Indispensable"
+
+      - title: "Everything"
+        url: "https://www.voidtools.com"
+        desc: "Recherche de fichiers instantanée"
+        tag: "Indispensable"
+
+      - title: "Rufus"
+        url: "https://rufus.ie"
+        desc: "Créer une clé USB bootable"
+        icon: download
+
+      - title: "PowerToys"
+        url: "https://learn.microsoft.com/fr-fr/windows/powertoys/"
+        desc: "Boîte à outils officielle Microsoft"
+
+  - title: "Commandes utiles"
+    icon: terminal
+    tools:
+      # type: code -> affiche un bloc de code avec bouton copier
+      - title: "Activer le compte admin caché"
+        type: code
+        desc: "À lancer en invite de commande admin"
+        code: |
+          net user administrator /active:yes
+
+      - title: "Vider le cache DNS"
+        type: code
+        code: |
+          ipconfig /flushdns
+
+      - title: "Voir les ports ouverts"
+        type: code
+        code: |
+          netstat -ano | findstr LISTENING
+
+  - title: "Domotique / Réseau perso"
+    icon: network
+    tools:
+      - title: "Home Assistant"
+        url: "https://www.home-assistant.io"
+        desc: "Interface domotique auto-hébergée"
+
+      - title: "Proxmox"
+        url: "https://www.proxmox.com"
+        desc: "Hyperviseur pour VMs et conteneurs"
